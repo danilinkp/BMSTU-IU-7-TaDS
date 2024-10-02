@@ -59,15 +59,11 @@ typedef struct
 
 enum errors_theatre
 {
-    WRONG_PRICES_ERROR = 2,
+    WRONG_PRICES_ERROR = 1,
     WRONG_TYPE_PERFORMANCE_ERROR,
     WRONG_AGE_LIMIT_ERROR,
     WRONG_MUSICAL_TYPE_ERROR,
     MUSICAL_READ_ERROR,
-
 };
-
-
-
 
 #endif //LAB_02_05_THEATRE_H

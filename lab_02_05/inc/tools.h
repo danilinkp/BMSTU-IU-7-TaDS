@@ -7,10 +7,9 @@
 
 enum errors
 {
-    NOT_NUMBER_ERROR = 1,
+    NOT_NUMBER_ERROR = 6,
     EMPTY_INPUT_ERROR,
     STR_LEN_ERROR,
-
 };
 
 int read_int(FILE *input, int *num);
