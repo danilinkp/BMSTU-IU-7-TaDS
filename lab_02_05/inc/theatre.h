@@ -1,6 +1,9 @@
 #ifndef LAB_02_05_THEATRE_H
 #define LAB_02_05_THEATRE_H
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #define MAX_STR_LEN 30
 
 // Возрастные ограничения
@@ -39,7 +42,6 @@ typedef struct
     int duration;
 } musical_t;
 
-
 // Объединение для спектакля
 typedef union
 {
@@ -65,5 +67,13 @@ enum errors_theatre
     WRONG_MUSICAL_TYPE_ERROR,
     MUSICAL_READ_ERROR,
 };
+
+// Функция для чтения одного театра
+int fread_theatre(theatre_t *theatre, FILE *file_input);
+
+// Функция для вывода тетара
+void fprint_theatre(theatre_t theatre, FILE *file_output);
+
+int read_age_limit(age_limit_t *age_limit, FILE *file_input);
 
 #endif //LAB_02_05_THEATRE_H

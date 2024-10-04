@@ -1,7 +1,5 @@
 #include "theatre.h"
 #include "tools.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 /*
  * Функции чтения
@@ -31,7 +29,7 @@ static int read_performance_type(performance_type_t *performance_type, FILE *fil
     return EXIT_SUCCESS;
 }
 
-static int read_age_limit(age_limit_t *age_limit, FILE *file_input)
+int read_age_limit(age_limit_t *age_limit, FILE *file_input)
 {
     int tmp;
     if (file_input == stdin)
@@ -187,7 +185,7 @@ int fread_theatre(theatre_t *theatre, FILE *file_input)
  * Функции вывода
  */
 
-char *get_str_age_limit(age_limit_t age_limit)
+static char *get_str_age_limit(age_limit_t age_limit)
 {
     switch (age_limit)
     {
@@ -201,7 +199,7 @@ char *get_str_age_limit(age_limit_t age_limit)
     return "None";
 }
 
-char *get_str_performance_type(performance_type_t performance_type)
+static char *get_str_performance_type(performance_type_t performance_type)
 {
     switch (performance_type)
     {
@@ -219,7 +217,7 @@ char *get_str_performance_type(performance_type_t performance_type)
     return "None";
 }
 
-char *get_str_musical_type(musical_type_t musical_type)
+static char *get_str_musical_type(musical_type_t musical_type)
 {
     switch (musical_type)
     {
@@ -233,25 +231,27 @@ char *get_str_musical_type(musical_type_t musical_type)
     return "None";
 }
 
-void fprint_theatre(theatre_t *theatre, FILE *file_output)
+void fprint_theatre(theatre_t theatre, FILE *file_output)
 {
-    fprintf(file_output, "| %-30s| %-30s| %-10d| %-10d| %-30s|",
-            theatre->name,
-            theatre->performance_name,
-            theatre->price_low,
-            theatre->price_high,
-            get_str_performance_type(theatre->performance_type));
+    fprintf(file_output, "| %-30s| %-30s| %-10d| %-10d| %-15s|",
+            theatre.name,
+            theatre.performance_name,
+            theatre.price_low,
+            theatre.price_high,
+            get_str_performance_type(theatre.performance_type));
 
-    switch (theatre->performance_type)
+    switch (theatre.performance_type)
     {
         case (FAIRY_TALE):
-            fprintf(file_output, " %-6s|", get_str_age_limit(theatre->performance.fairy_tale_age_limit));
+            fprintf(file_output, " %-9s|---------------------|---------------|--------|------------------\n", get_str_age_limit(theatre.performance.fairy_tale_age_limit));
             break;
         case (MUSICAL):
-            fprintf(file_output, " %-30s| %-30s| %-30s| %-6s| %-5d|", theatre->performance.musical.composer,
-                    theatre->performance.musical.composer, get_str_musical_type(theatre->performance.musical.type),
-                    get_str_age_limit(theatre->performance.musical.age), theatre->performance.musical.duration);
+            fprintf(file_output, " %-6s| %-30s| %-20s| %-10s| %-18d|\n",
+                    get_str_age_limit(theatre.performance.musical.age), theatre.performance.musical.composer,
+                    theatre.performance.musical.country, get_str_musical_type(theatre.performance.musical.type),
+                    theatre.performance.musical.duration);
         default:
+            fprintf(file_output, "--------|---------------------|---------------|--------|------------------\n");
             break;
     }
 }

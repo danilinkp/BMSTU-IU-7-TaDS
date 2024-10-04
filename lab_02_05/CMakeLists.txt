@@ -9,6 +9,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror -Wpedantic -Wextra -Wfloat-equal -Wfloat-conversion")
 
 set(SRCDIR src/)
-set(SOURCES ${SRCDIR}main.c ${SRCDIR}theatre.c ${SRCDIR}table_theatre.c ${SRCDIR}tools.c)
+set(SOURCES ${SRCDIR}main.c ${SRCDIR}theatre.c ${SRCDIR}table_theatre.c ${SRCDIR}tools.c
+        src/menu.c)
 
 add_executable(app ${SOURCES})

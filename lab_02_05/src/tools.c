@@ -1,5 +1,4 @@
 #include "tools.h"
-#include <string.h>
 
 int read_int(FILE *input, int *num)
 {
@@ -28,4 +27,30 @@ int read_str(FILE *input, char *str_dst, size_t max_len)
     size_t len = strlen(tmp);
     strncpy(str_dst, tmp, len);
     return EXIT_SUCCESS;
+}
+
+int theatre_t_comp(const void *l, const void *r)
+{
+    const theatre_t *left = (const theatre_t *) l;
+    const theatre_t *right = (const theatre_t *) r;
+
+    return (left->price_low - right->price_low);
+}
+
+int key_comp(const void *l, const void *r)
+{
+    const theatre_key_t *left = (const theatre_key_t *) l;
+    const theatre_key_t *right = (const theatre_key_t *) r;
+
+    return (left->price_low - right->price_low);
+}
+
+unsigned long long microseconds_now(void)
+{
+    struct timeval value;
+
+    if (gettimeofday(&value, NULL))
+        return (unsigned long long) -1;
+
+    return value.tv_sec * 1000ULL * 1000ULL + value.tv_usec;
 }
