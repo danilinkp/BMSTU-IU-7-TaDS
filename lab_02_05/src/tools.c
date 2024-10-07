@@ -1,18 +1,5 @@
 #include "tools.h"
-
-int read_int(FILE *input, int *num)
-{
-    if (fscanf(input, "%d", num) != 1)
-        return NOT_NUMBER_ERROR;
-    return EXIT_SUCCESS;
-}
-
-int read_two_ints(FILE *input, int *num_1, int *num_2)
-{
-    if (fscanf(input, "%d %d", num_1, num_2) != 2)
-        return NOT_NUMBER_ERROR;
-    return EXIT_SUCCESS;
-}
+#include <ctype.h>
 
 int read_str(FILE *input, char *str_dst, size_t max_len)
 {
@@ -21,11 +8,38 @@ int read_str(FILE *input, char *str_dst, size_t max_len)
         return EMPTY_INPUT_ERROR;
     tmp[strcspn(tmp, "\n")] = '\0';
 
-    if (strlen(tmp) > max_len || strlen(tmp) == 0)
+    if (strlen(tmp) > max_len)
         return STR_LEN_ERROR;
 
-    size_t len = strlen(tmp);
-    strncpy(str_dst, tmp, len);
+    strcpy(str_dst, tmp);
+    return EXIT_SUCCESS;
+}
+
+int is_int(const char *s)
+{
+    for (size_t i = 0; i < strlen(s); i++)
+    {
+        if (!isdigit(s[i]))
+        {
+            if (i == 0 && (s[i] == '-' || s[i] == '+'))
+                continue;
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int read_int(FILE *input, int *num)
+{
+    char tmp[MAX_STR_LEN + 1];
+    int max_len = 1000000;
+    int rc = read_str(input, tmp, max_len);
+    if (rc != EXIT_SUCCESS)
+        return rc;
+    if (!is_int(tmp))
+        return NOT_NUMBER_ERROR;
+    if (sscanf(tmp, "%d", num) != 1)
+        return NOT_NUMBER_ERROR;
     return EXIT_SUCCESS;
 }
 

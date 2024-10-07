@@ -12,12 +12,13 @@ int main(void)
     FILE *file = NULL;
     int action = -1;
     double avg_table_quick_sort, avg_table_insertion_sort, avg_keys_quick_sort, avg_keys_insertion_sort;
+
     while (action != EXIT_PROGRAM)
     {
         menu_print();
-        if (scanf("%d", &action) != 1)
+        if (read_int(stdin, &action) != EXIT_SUCCESS)
         {
-            printf("Нет такого пункта!");
+            printf("Ошибка: Пожалуйста, введите число.\n");
             continue;
         }
 
@@ -27,18 +28,19 @@ int main(void)
                 break;
             case LOAD_TABLE:
                 printf("Введите имя файла: ");
-                if (read_str(stdin, file_name, sizeof(file_name)) != EXIT_SUCCESS)
+                rc = read_str(stdin, file_name, sizeof(file_name));
+                if (rc != EXIT_SUCCESS)
                 {
                     printf("Ошибка чтения имени файла.\n");
                     break;
                 }
-                file = fopen(file_name, "rt");
+                file = fopen(file_name, "r");
                 if (!file)
                 {
                     printf("Ошибка открытия файла или его не существует.\n");
                     break;
                 }
-
+                memset(&table_theatre, 0, sizeof(table_theatre_t));
                 rc = fread_table(&table_theatre, table_keys, &size_keys, file);
                 if (rc != EXIT_SUCCESS)
                 {
@@ -77,6 +79,7 @@ int main(void)
                     printf("Ничего не удалилось.\n");
                     break;
                 }
+                printf("Театр успешно удален.\n");
                 update_keys_with_table(table_theatre, table_keys, &size_keys);
                 break;
             case PRINT_SORTED_KEYS:
@@ -88,7 +91,7 @@ int main(void)
             case PRINT_SORTED_TABLE:
                 if (table_theatre.rows == 0)
                     printf("Таблица пуста.\n");
-                qsort(&table_theatre, table_theatre.rows, sizeof(table_theatre), theatre_t_comp);
+                qsort(table_theatre.theatres, table_theatre.rows, sizeof(theatre_t), theatre_t_comp);
                 fprint_table(table_theatre, stdout);
                 update_keys_with_table(table_theatre, table_keys, &size_keys);
                 break;
@@ -121,6 +124,7 @@ int main(void)
                     printf("Балеты не найдены.\n");
                     break;
                 }
+                break;
             case COMP_TABLE_WITH_KEYS:
                 if (table_theatre.rows == 0)
                 {
@@ -134,13 +138,13 @@ int main(void)
                 avg_table_insertion_sort = time_sort_table(table_theatre, NUM_OF_ITERATIONS, insertion_sort);
                 avg_keys_insertion_sort = time_sort_keys(table_keys, size_keys, NUM_OF_ITERATIONS, insertion_sort);
 
-                printf("| %-25s | %-25s | %-14s |\n", "Алгоритм сортировки", "Структра данных", "Среднее время");
-                printf("|---------------------|-----------------|---------------|\n");
-                printf("| %-25s | %-25s | %-14lf |", "Quick Sort", "Таблица", avg_table_quick_sort);
-                printf("| %-25s | %-25s | %-14lf |", "Quick Sort", "Ключи", avg_keys_quick_sort);
-                printf("|---------------------|-----------------|---------------|\n");
-                printf("| %-25s | %-25s | %-14lf |", "Insertion Sort", "Таблица", avg_table_insertion_sort);
-                printf("| %-25s | %-25s | %-14lf |", "Insertion Sort", "Ключи", avg_keys_insertion_sort);
+                printf("| %-25s | %-25s | %-14s |\n", "Algorithm", "Data structure", "Avg time");
+                printf("|---------------------------|---------------------------|----------------|\n");
+                printf("| %-25s | %-25s | %-14lf |\n", "Quick Sort", "Table", avg_table_quick_sort);
+                printf("| %-25s | %-25s | %-14lf |\n", "Quick Sort", "Keys", avg_keys_quick_sort);
+                printf("|---------------------------|---------------------------|----------------|\n");
+                printf("| %-25s | %-25s | %-14lf |\n", "Insertion Sort", "Table", avg_table_insertion_sort);
+                printf("| %-25s | %-25s | %-14lf |\n", "Insertion Sort", "Keys", avg_keys_insertion_sort);
 
                 printf(" -Quick sort sort: ключи на %.2lf%% более эффективны, чем сортировка таблицы\n",
                        (avg_table_quick_sort - avg_keys_quick_sort) / avg_table_quick_sort * 100);
@@ -168,13 +172,13 @@ int main(void)
                 avg_table_insertion_sort = time_sort_table(table_theatre, NUM_OF_ITERATIONS, insertion_sort);
                 avg_keys_insertion_sort = time_sort_keys(table_keys, size_keys, NUM_OF_ITERATIONS, insertion_sort);
 
-                printf("| %-25s | %-25s | %-14s |\n", "Алгоритм сортировки", "Структра данных", "Среднее время");
-                printf("|---------------------|-----------------|---------------|\n");
-                printf("| %-25s | %-25s | %-14lf |", "Quick Sort", "Таблица", avg_table_quick_sort);
-                printf("| %-25s | %-25s | %-14lf |", "Quick Sort", "Ключи", avg_keys_quick_sort);
-                printf("|---------------------|-----------------|---------------|\n");
-                printf("| %-25s | %-25s | %-14lf |", "Insertion Sort", "Таблица", avg_table_insertion_sort);
-                printf("| %-25s | %-25s | %-14lf |", "Insertion Sort", "Ключи", avg_keys_insertion_sort);
+                printf("| %-25s | %-25s | %-14s |\n", "Algorithm", "Data structure", "Avg time");
+                printf("|---------------------------|---------------------------|----------------|\n");
+                printf("| %-25s | %-25s | %-14lf |\n", "Quick Sort", "Table", avg_table_quick_sort);
+                printf("| %-25s | %-25s | %-14lf |\n", "Quick Sort", "Keys", avg_keys_quick_sort);
+                printf("|---------------------------|---------------------------|----------------|\n");
+                printf("| %-25s | %-25s | %-14lf |\n", "Insertion Sort", "Table", avg_table_insertion_sort);
+                printf("| %-25s | %-25s | %-14lf |\n", "Insertion Sort", "Keys", avg_keys_insertion_sort);
 
                 printf(" -Qsort на %.2lf%% более эффективен, чем сортировка вставками для Таблиц\n",
                        (avg_table_insertion_sort - avg_table_quick_sort) / avg_table_insertion_sort * 100);

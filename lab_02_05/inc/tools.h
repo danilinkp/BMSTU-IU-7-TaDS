@@ -19,8 +19,6 @@ enum errors
 
 int read_int(FILE *input, int *num);
 
-int read_two_ints(FILE *input, int *num_1, int *num_2);
-
 int read_str(FILE *input, char *str_dst, size_t max_len);
 
 int theatre_t_comp(const void *l, const void *r);
