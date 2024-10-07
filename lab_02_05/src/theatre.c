@@ -163,7 +163,7 @@ int fread_theatre(theatre_t *theatre, FILE *file_input)
     {
         if (file_input == stdin)
         {
-            while (getchar() != '\n');
+//            while (getchar() != '\n');
             printf("Ошибка ввода названия тетара\n");
             return rc;
         }

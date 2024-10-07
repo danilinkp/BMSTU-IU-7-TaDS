@@ -104,7 +104,7 @@ int main(void)
                 fprint_table_by_keys(table_theatre, table_keys, stdout);
                 break;
             case PRINT_BALLETS:
-                printf("Введите возрастное ограничение на балет: ");
+                printf("Введите возрастное ограничение на балет: \n");
                 age_limit_t age_limit;
                 if (read_age_limit(&age_limit, stdin) != EXIT_SUCCESS)
                 {
@@ -113,7 +113,7 @@ int main(void)
                 }
                 printf("Введите продолжительность балета: ");
                 int duration;
-                if (scanf("%d", &duration) != 1)
+                if (read_int(stdin, &duration) != EXIT_SUCCESS)
                 {
                     printf("Ошибка ввода продолжительности.\n");
                     break;
