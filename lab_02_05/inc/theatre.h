@@ -74,6 +74,7 @@ int fread_theatre(theatre_t *theatre, FILE *file_input);
 // Функция для вывода тетара
 void fprint_theatre(theatre_t theatre, FILE *file_output);
 
+// Функция для чтения возрастного ограничения
 int read_age_limit(age_limit_t *age_limit, FILE *file_input);
 
 #endif //LAB_02_05_THEATRE_H

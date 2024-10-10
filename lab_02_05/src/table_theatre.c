@@ -138,28 +138,58 @@ int add_theatre(table_theatre_t *table_theatre)
     return EXIT_SUCCESS;
 }
 
-// Поиск балетов для детей указаного возраста, продолжительностью меньше указанной
-// Функция только выводит найденные баллеты в случае успеха, иначе код ошибки
-int find_ballets(table_theatre_t table_theatre, age_limit_t age_limit, int duration)
+static age_limit_t define_age_limit(int age)
 {
-    printf("| %-7s | %-30s| %-30s| %-10s| %-10s| %-15s| %-9s| %-30s| %-20s| %-10s| %-18s|\n", "Индекс",
-           "Theatre name", "Performance_name",
-           "Min price", "Max price", "Performance", "Age", "Composer", "Country", "Type",
-           "Duration");
-    int is_ballet_in_table = 0;
+    if (age >= 3 && age < 10)
+        return AGE_3;
+    else if (age >= 10 && age < 16)
+        return AGE_10;
+    return AGE_16;
+}
+
+static int is_ballet_in_table(table_theatre_t table_theatre, age_limit_t age_limit, int duration)
+{
+    int is_ballet = 0;
     for (size_t i = 0; i < table_theatre.rows; i++)
     {
-        if (table_theatre.theatres[i].performance.musical.type == 1 && table_theatre.theatres[i].performance.musical.age == age_limit &&
+        if (table_theatre.theatres[i].performance_type == MUSICAL &&
+            table_theatre.theatres[i].performance.musical.type == 1 &&
+            table_theatre.theatres[i].performance.musical.age == age_limit &&
             table_theatre.theatres[i].performance.musical.duration < duration)
         {
-            is_ballet_in_table = 1;
-            printf("|--------|-------------------------------|-------------------------------|-----------|-----------|----------------|----------|-------------------------------|---------------------|-----------|-------------------|\n");
-            printf("| %-7zu", i + 1);
-            fprint_theatre(table_theatre.theatres[i], stdout);
+            is_ballet = 1;
+            break;
         }
     }
+    return is_ballet;
+}
 
-    if (!is_ballet_in_table)
+// Поиск балетов для детей указаного возраста, продолжительностью меньше указанной
+// Функция только выводит найденные баллеты в случае успеха, иначе код ошибки
+int find_ballets(table_theatre_t table_theatre, int age, int duration)
+{
+    age_limit_t age_limit = define_age_limit(age);
+    if (is_ballet_in_table(table_theatre, age_limit, duration))
+    {
+        printf("| %-7s | %-30s| %-30s| %-10s| %-10s| %-15s| %-9s| %-30s| %-20s| %-10s| %-18s|\n", "Индекс",
+               "Theatre name", "Performance_name",
+               "Min price", "Max price", "Performance", "Age", "Composer", "Country", "Type",
+               "Duration");
+        for (size_t i = 0; i < table_theatre.rows; i++)
+        {
+            if (table_theatre.theatres[i].performance_type == MUSICAL &&
+                table_theatre.theatres[i].performance.musical.type == 1 &&
+                table_theatre.theatres[i].performance.musical.age == age_limit &&
+                table_theatre.theatres[i].performance.musical.duration < duration)
+            {
+                printf("|--------|-------------------------------|-------------------------------|-----------|-----------|----------------|----------|-------------------------------|---------------------|-----------|-------------------|\n");
+                printf("| %-7zu", i + 1);
+                fprint_theatre(table_theatre.theatres[i], stdout);
+            }
+        }
+        printf("|--------|-------------------------------|-------------------------------|-----------|-----------|----------------|----------|-------------------------------|---------------------|-----------|-------------------|\n");
+    }
+    else
         return BALLET_NOT_FOUND_ERROR;
     return EXIT_SUCCESS;
 }

@@ -8,7 +8,7 @@ int read_str(FILE *input, char *str_dst, size_t max_len)
         return EMPTY_INPUT_ERROR;
     tmp[strcspn(tmp, "\n")] = '\0';
 
-    if (strlen(tmp) > max_len || strlen(tmp) == 0)
+    if (strlen(tmp) > max_len)
         return STR_LEN_ERROR;
 
     strcpy(str_dst, tmp);
