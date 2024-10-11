@@ -208,6 +208,25 @@ int main(void)
                        ((double) (sizeof(theatre_t) * table_theatre.rows + sizeof(theatre_key_t) * size_keys)) /
                        ((double) (sizeof(theatre_t) * table_theatre.rows)) * 100 - 100);
                 break;
+
+            case SAVE_FILE:
+                printf("Введите имя файла, в который хотите сохранить таблицу: ");
+                rc = read_str(stdin, file_name, sizeof(file_name));
+                if (rc != EXIT_SUCCESS)
+                {
+                    printf("Ошибка чтения имени файла.\n");
+                    break;
+                }
+                file = fopen(file_name, "w");
+                if (!file)
+                {
+                    printf("Ошибка открытия файла или его не существует.\n");
+                    break;
+                }
+                save_file(table_theatre, file);
+
+                printf("Таблца успешно сохранена.\n");
+                break;
             default:
                 printf("Выберите 1 из пунктов меню.\n");
                 break;

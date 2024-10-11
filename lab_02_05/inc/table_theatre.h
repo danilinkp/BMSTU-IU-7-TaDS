@@ -68,5 +68,7 @@ double time_sort_table(table_theatre_t table_theatre, size_t count, sort_t sort)
 // Замер времени для таблицы клбчей
 double time_sort_keys(theatre_key_t table_keys[], size_t table_size, size_t count, sort_t sort);
 
+// Сохранение таблицы в файл
+void save_file(table_theatre_t table_theatre, FILE *file_output);
 
 #endif //LAB_02_05_TABLE_THEATRE_H

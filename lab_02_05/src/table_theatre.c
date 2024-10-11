@@ -138,116 +138,152 @@ int add_theatre(table_theatre_t *table_theatre)
     return EXIT_SUCCESS;
 }
 
-static age_limit_t define_age_limit(int age)
-{
-    if (age >= 3 && age < 10)
-        return AGE_3;
-    else if (age >= 10 && age < 16)
-        return AGE_10;
-    return AGE_16;
-}
-
-static int is_ballet_in_table(table_theatre_t table_theatre, age_limit_t age_limit, int duration)
-{
-    int is_ballet = 0;
-    for (size_t i = 0; i < table_theatre.rows; i++)
-    {
-        if (table_theatre.theatres[i].performance_type == MUSICAL &&
-            table_theatre.theatres[i].performance.musical.type == 1 &&
-            table_theatre.theatres[i].performance.musical.age == age_limit &&
-            table_theatre.theatres[i].performance.musical.duration < duration)
-        {
-            is_ballet = 1;
-            break;
-        }
-    }
-    return is_ballet;
-}
-
 // Поиск балетов для детей указаного возраста, продолжительностью меньше указанной
 // Функция только выводит найденные баллеты в случае успеха, иначе код ошибки
 int find_ballets(table_theatre_t table_theatre, int age, int duration)
 {
-    age_limit_t age_limit = define_age_limit(age);
-    if (is_ballet_in_table(table_theatre, age_limit, duration))
+//
+    printf("| %-7s | %-30s| %-30s| %-10s| %-10s| %-15s| %-9s| %-30s| %-20s| %-10s| %-18s|\n", "Индекс",
+           "Theatre name", "Performance_name",
+           "Min price", "Max price", "Performance", "Age", "Composer", "Country", "Type",
+           "Duration");
+    int is_ballet_in_table = 0;
+    for (size_t i = 0; i < table_theatre.rows; i++)
     {
-        printf("| %-7s | %-30s| %-30s| %-10s| %-10s| %-15s| %-9s| %-30s| %-20s| %-10s| %-18s|\n", "Индекс",
-               "Theatre name", "Performance_name",
-               "Min price", "Max price", "Performance", "Age", "Composer", "Country", "Type",
-               "Duration");
-        for (size_t i = 0; i < table_theatre.rows; i++)
+        if (table_theatre.theatres[i].performance_type == MUSICAL &&
+            table_theatre.theatres[i].performance.musical.type == 1 &&
+            table_theatre.theatres[i].performance.musical.duration < duration)
         {
-            if (table_theatre.theatres[i].performance_type == MUSICAL &&
-                table_theatre.theatres[i].performance.musical.type == 1 &&
-                table_theatre.theatres[i].performance.musical.age == age_limit &&
-                table_theatre.theatres[i].performance.musical.duration < duration)
+//            if (age >= && (table_theatre.theatres[i].performance.musical.age == AGE_3 ||
+//                             table_theatre.theatres[i].performance.musical.age == AGE_10 ||
+//                             table_theatre.theatres[i].performance.musical.age == AGE_16))
+//            {
+//                printf("|--------|-------------------------------|-------------------------------|-----------|-----------|----------------|----------|-------------------------------|---------------------|-----------|-------------------|\n");
+//                printf("| %-7zu", i + 1);
+//                fprint_theatre(table_theatre.theatres[i], stdout);
+//            }
+            if ((age >= 3 && age < 10) && (table_theatre.theatres[i].performance.musical.age == AGE_3))
             {
+                is_ballet_in_table = 1;
+                printf("|--------|-------------------------------|-------------------------------|-----------|-----------|----------------|----------|-------------------------------|---------------------|-----------|-------------------|\n");
+                printf("| %-7zu", i + 1);
+                fprint_theatre(table_theatre.theatres[i], stdout);
+            }
+            else if (age >= 10 && (table_theatre.theatres[i].performance.musical.age == AGE_10 ||
+                                   table_theatre.theatres[i].performance.musical.age == AGE_3))
+            {
+                is_ballet_in_table = 1;
+                printf("|--------|-------------------------------|-------------------------------|-----------|-----------|----------------|----------|-------------------------------|---------------------|-----------|-------------------|\n");
+                printf("| %-7zu", i + 1);
+                fprint_theatre(table_theatre.theatres[i], stdout);
+            }
+            else if (age >= 16 && (table_theatre.theatres[i].performance.musical.age == AGE_3 ||
+                                   table_theatre.theatres[i].performance.musical.age == AGE_10 ||
+                                   table_theatre.theatres[i].performance.musical.age == AGE_16))
+            {
+                is_ballet_in_table = 1;
+                printf("|--------|-------------------------------|-------------------------------|-----------|-----------|----------------|----------|-------------------------------|---------------------|-----------|-------------------|\n");
+                printf("| %-7zu", i + 1);
+                fprint_theatre(table_theatre.theatres[i], stdout);
+            }
+            else if ((age >= 10 && age < 16) && (table_theatre.theatres[i].performance.musical.age == AGE_3 ||
+                                                 table_theatre.theatres[i].performance.musical.age == AGE_10))
+            {
+                is_ballet_in_table = 1;
                 printf("|--------|-------------------------------|-------------------------------|-----------|-----------|----------------|----------|-------------------------------|---------------------|-----------|-------------------|\n");
                 printf("| %-7zu", i + 1);
                 fprint_theatre(table_theatre.theatres[i], stdout);
             }
         }
-        printf("|--------|-------------------------------|-------------------------------|-----------|-----------|----------------|----------|-------------------------------|---------------------|-----------|-------------------|\n");
     }
-    else
+    printf("|--------|-------------------------------|-------------------------------|-----------|-----------|----------------|----------|-------------------------------|---------------------|-----------|-------------------|\n");
+    if (!is_ballet_in_table)
         return BALLET_NOT_FOUND_ERROR;
     return EXIT_SUCCESS;
-}
-
+    }
 
 // Сортировка вставками
-void insertion_sort(void *base, size_t nmemb, size_t size, compar_t cmp)
-{
-    char *pb = base;
-    char *pe = pb + nmemb * size;
-    for (char *pi = pb + size; pi < pe; pi += size)
-        for (char *pk = pi; pk > pb && cmp((pk - size), pk) > 0; pk -= size)
+    void insertion_sort(void *base, size_t nmemb, size_t size, compar_t cmp)
+    {
+        char *pb = base;
+        char *pe = pb + nmemb * size;
+        for (char *pi = pb + size; pi < pe; pi += size)
+            for (char *pk = pi; pk > pb && cmp((pk - size), pk) > 0; pk -= size)
+            {
+                char buf[size];
+                memcpy(buf, (pk - size), size);
+                memcpy((pk - size), pk, size);
+                memcpy(pk, buf, size);
+            }
+    }
+
+
+    double time_sort_table(table_theatre_t table_theatre, size_t count, sort_t sort)
+    {
+        unsigned long long beg, end;
+        double sum = 0.0;
+        for (size_t i = 0; i < count; i++)
         {
-            char buf[size];
-            memcpy(buf, (pk - size), size);
-            memcpy((pk - size), pk, size);
-            memcpy(pk, buf, size);
+            table_theatre_t tmp_table = table_theatre;
+            beg = microseconds_now();
+            sort(&tmp_table.theatres, tmp_table.rows, sizeof(theatre_t), theatre_t_comp);
+            end = microseconds_now();
+            sum += end - beg;
         }
-}
-
-
-double time_sort_table(table_theatre_t table_theatre, size_t count, sort_t sort)
-{
-    unsigned long long beg, end;
-    double sum = 0.0;
-    for (size_t i = 0; i < count; i++)
-    {
-        table_theatre_t tmp_table = table_theatre;
-        beg = microseconds_now();
-        sort(&tmp_table.theatres, tmp_table.rows, sizeof(theatre_t), theatre_t_comp);
-        end = microseconds_now();
-        sum += end - beg;
+        return sum / count;
     }
-    return sum / count;
-}
 
-static void arrcpy(const void *src, void *dst, size_t nmemb, size_t size)
-{
-    const char *source = src;
-    char *dest = dst;
-
-    for (const char *i = src; i < source + nmemb * size; i++, dest++)
-        *dest = *i;
-}
-
-
-double time_sort_keys(theatre_key_t table_keys[], size_t table_size, size_t count, sort_t sort)
-{
-    unsigned long long beg, end;
-    double sum = 0.0;
-    theatre_key_t tmp_keys[MAX_ROW_COUNT];
-    for (size_t i = 0; i < count; i++)
+    static void arrcpy(const void *src, void *dst, size_t nmemb, size_t size)
     {
-        arrcpy(table_keys, tmp_keys, table_size, sizeof(theatre_key_t));
-        beg = microseconds_now();
-        sort(&tmp_keys, table_size, sizeof(theatre_key_t), theatre_t_comp);
-        end = microseconds_now();
-        sum += end - beg;
+        const char *source = src;
+        char *dest = dst;
+
+        for (const char *i = src; i < source + nmemb * size; i++, dest++)
+            *dest = *i;
     }
-    return sum / count;
-}
+
+
+    double time_sort_keys(theatre_key_t table_keys[], size_t table_size, size_t count, sort_t sort)
+    {
+        unsigned long long beg, end;
+        double sum = 0.0;
+        theatre_key_t tmp_keys[MAX_ROW_COUNT];
+        for (size_t i = 0; i < count; i++)
+        {
+            arrcpy(table_keys, tmp_keys, table_size, sizeof(theatre_key_t));
+            beg = microseconds_now();
+            sort(&tmp_keys, table_size, sizeof(theatre_key_t), theatre_t_comp);
+            end = microseconds_now();
+            sum += end - beg;
+        }
+        return sum / count;
+    }
+
+    void save_file(table_theatre_t table_theatre, FILE *file_output)
+    {
+        for (size_t i = 0; i < table_theatre.rows; i++)
+        {
+            if (table_theatre.theatres[i].performance_type == FAIRY_TALE)
+            {
+                fprintf(file_output, "%s\n%s\n%d\n%d\n%d\n%d\n", table_theatre.theatres[i].name,
+                        table_theatre.theatres[i].performance_name, table_theatre.theatres[i].price_low,
+                        table_theatre.theatres[i].price_high, table_theatre.theatres[i].performance_type,
+                        table_theatre.theatres[i].performance.fairy_tale_age_limit);
+            }
+            else if (table_theatre.theatres[i].performance_type == MUSICAL)
+            {
+                fprintf(file_output, "%s\n%s\n%d\n%d\n%d\n%s\n%s\n%d\n%d\n%d\n", table_theatre.theatres[i].name,
+                        table_theatre.theatres[i].performance_name, table_theatre.theatres[i].price_low,
+                        table_theatre.theatres[i].price_high, table_theatre.theatres[i].performance_type,
+                        table_theatre.theatres[i].performance.musical.composer,
+                        table_theatre.theatres[i].performance.musical.country,
+                        table_theatre.theatres[i].performance.musical.type,
+                        table_theatre.theatres[i].performance.musical.age,
+                        table_theatre.theatres[i].performance.musical.duration);
+            }
+            else
+                fprintf(file_output, "%s\n%s\n%d\n%d\n%d\n", table_theatre.theatres[i].name,
+                        table_theatre.theatres[i].performance_name, table_theatre.theatres[i].price_low,
+                        table_theatre.theatres[i].price_high, table_theatre.theatres[i].performance_type);
+        }
+    }

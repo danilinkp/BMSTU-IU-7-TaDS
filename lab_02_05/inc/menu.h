@@ -14,7 +14,8 @@ typedef enum
     PRINT_SORTED_TABLE_BY_KEYS,
     PRINT_BALLETS,
     COMP_TABLE_WITH_KEYS,
-    COMPARE_SORTS
+    COMPARE_SORTS,
+    SAVE_FILE
 } menu_action_t;
 
 void menu_print(void);
