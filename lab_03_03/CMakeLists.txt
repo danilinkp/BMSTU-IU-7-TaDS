@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
-project(lab_02_05 C)
+project(lab_03_03 C)
 
 include_directories("inc/")
 
@@ -10,6 +10,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror -Wpedantic -Wextra -Wfloat-equ
 
 set(SOURCES src/main.c
         src/matrix.c
-        src/vector.c)
+        src/vector.c
+        src/mv_operations.c
+        src/menu.c)
 
 add_executable(app ${SOURCES})

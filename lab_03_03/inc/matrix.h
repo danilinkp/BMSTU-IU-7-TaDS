@@ -44,16 +44,13 @@ int sparse_matrix_alloc(sparse_matrix_t *sparse_matrix);
 void sparse_matrix_free(sparse_matrix_t *sparse_matrix);
 
 // Чтение размера матриц
-void read_matrix_size(size_t *rows, size_t *cols);
-
-// Чтение матрицы, путем поэлементного ввода
-int read_matrix(matrix_t *matrix, size_t *num_non_zeros);
+void read_matrix_size(size_t *rows, size_t *cols, size_t *num_non_zeros, int is_vector_readed, size_t vector_rows);
 
 // Заполнение матрицы, путем ввода координатным способом
-void feel_matrix_with_coords(matrix_t *matrix, size_t *num_non_zeros);
+void fill_matrix_with_coords(matrix_t *matrix, const size_t *num_non_zeros);
 
 // Заполнение матрицы рандомными элементами в рандомные позиции, соответствующий кол-ву элементов
-void fill_matrix_with_rand_elems(matrix_t *matrix, size_t *num_non_zeros);
+void fill_matrix_with_rand_elems(matrix_t *matrix, size_t const *num_non_zeros);
 
 // Перевод из стандартной матрицы в разреженную
 void std_matrix_to_sparse(matrix_t matrix, sparse_matrix_t *sparse_matrix);

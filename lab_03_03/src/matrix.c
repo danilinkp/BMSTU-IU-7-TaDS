@@ -57,11 +57,11 @@ int sparse_matrix_alloc(sparse_matrix_t *sparse_matrix)
 }
 
 // Функии чтения данных
-void read_matrix_size(size_t *rows, size_t *cols)
+void read_matrix_size(size_t *rows, size_t *cols, size_t *num_non_zeros, int is_vector_readed, size_t vector_rows)
 {
     int rc = EXIT_SUCCESS;
 
-    size_t tmp_cols, tmp_rows;
+    size_t tmp_cols, tmp_rows, tmp_non_zeros;
     do
     {
         printf("Введите количество строк матрицы: ");
@@ -75,34 +75,39 @@ void read_matrix_size(size_t *rows, size_t *cols)
     } while (rc != EXIT_SUCCESS);
     *rows = tmp_rows;
 
+    if (!is_vector_readed)
+    {
+        do
+        {
+            printf("Введите количество строк матрицы: ");
+            if ((scanf("%zu", &tmp_cols)) != 1 || tmp_cols <= 0)
+            {
+                printf("Количество строк введено неверно.\n");
+                rc = READ_SIZE_ERROR;
+                continue;
+            }
+            rc = EXIT_SUCCESS;
+        } while (rc != EXIT_SUCCESS);
+        *cols = tmp_cols;
+    }
+    else
+    {
+        printf("Количество столбцов матрицы равно кол-ву строк вектора столбца.\n");
+        *cols = vector_rows;
+    }
+
     do
     {
-        printf("Введите количество строк матрицы: ");
-        if ((scanf("%zu", &tmp_cols)) != 1 || tmp_cols <= 0)
+        printf("Введите количество ненулевых элементов матрицы: ");
+        if ((scanf("%zu", &tmp_non_zeros)) != 1 || tmp_non_zeros <= 0 || tmp_non_zeros > *rows)
         {
-            printf("Количество строк введено неверно.\n");
+            printf("Количество ненулевых элементов матрицы введено неверно.\n");
             rc = READ_SIZE_ERROR;
             continue;
         }
         rc = EXIT_SUCCESS;
     } while (rc != EXIT_SUCCESS);
-    *cols = tmp_cols;
-
-
-}
-
-int read_matrix(matrix_t *matrix, size_t *num_non_zeros)
-{
-    printf("Введите матрицу размерностью %zu на %zu:\n", matrix->rows, matrix->cols);
-    for (size_t i = 0; i < matrix->rows; i++)
-        for (size_t j = 0; j < matrix->cols; j++)
-        {
-            if (scanf("%d", &matrix->data[i][j]) != 1)
-                return ELEM_READ_ERROR;
-            if (matrix->data[i][j] != 0)
-                (*num_non_zeros)++;
-        }
-    return EXIT_SUCCESS;
+    *num_non_zeros = tmp_non_zeros;
 }
 
 static void read_matrix_element(size_t *row, size_t *col, int *value, size_t rows, size_t cols)
@@ -139,7 +144,7 @@ static void read_matrix_element(size_t *row, size_t *col, int *value, size_t row
     do
     {
         printf("Введите значение элемента матрицы (от 0 до %zu): ", rows);
-        if (scanf("%d", &tmp_value) != 1)
+        if (scanf("%d", &tmp_value) != 1 || tmp_value == 0)
         {
             printf("Ошибка ввода значения элемента.\n");
             rc = ELEM_READ_ERROR;
@@ -150,22 +155,8 @@ static void read_matrix_element(size_t *row, size_t *col, int *value, size_t row
     *value = tmp_value;
 }
 
-void feel_matrix_with_coords(matrix_t *matrix, size_t *num_non_zeros)
+void fill_matrix_with_coords(matrix_t *matrix, size_t const *num_non_zeros)
 {
-    size_t tmp_non_zeros;
-    int rc = EXIT_SUCCESS;
-    do
-    {
-        printf("Введите количество ненулевых элементов матрицы: ");
-        if ((scanf("%zu", &tmp_non_zeros)) != 1 || tmp_non_zeros <= 0)
-        {
-            printf("Количество ненулевых элементов матрицы введено неверно.\n");
-            rc = READ_SIZE_ERROR;
-            continue;
-        }
-        rc = EXIT_SUCCESS;
-    } while (rc != EXIT_SUCCESS);
-    *num_non_zeros = tmp_non_zeros;
     size_t row, col;
     int value;
     for (size_t i = 0; i < *num_non_zeros; i++)
@@ -175,7 +166,7 @@ void feel_matrix_with_coords(matrix_t *matrix, size_t *num_non_zeros)
     }
 }
 
-void fill_matrix_with_rand_elems(matrix_t *matrix, size_t *num_non_zeros)
+void fill_matrix_with_rand_elems(matrix_t *matrix, size_t const *num_non_zeros)
 {
     srand(time(NULL));
     for (size_t k = 0; k < *num_non_zeros; k++)
@@ -188,7 +179,6 @@ void fill_matrix_with_rand_elems(matrix_t *matrix, size_t *num_non_zeros)
             k--;
     }
 }
-
 
 // Функции перевода из одной формы в другую
 void std_matrix_to_sparse(matrix_t matrix, sparse_matrix_t *sparse_matrix)
@@ -263,3 +253,9 @@ void print_sparse_matrix(sparse_matrix_t sparse_matrix)
             printf("%zu ", sparse_matrix.ia[i]);
     }
 }
+
+//1 2   2   12
+//0 4 x 5 = 20
+//2 3       19
+//
+//3 * 2 x 2 * 1 = 3 * 1
