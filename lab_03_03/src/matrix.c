@@ -183,8 +183,6 @@ void fill_matrix_with_rand_elems(matrix_t *matrix, size_t const *num_non_zeros)
 // Функции перевода из одной формы в другую
 void std_matrix_to_sparse(matrix_t matrix, sparse_matrix_t *sparse_matrix)
 {
-    sparse_matrix->rows = matrix.rows;
-    sparse_matrix->cols = matrix.cols;
     for (size_t i = 0; i < matrix.rows; i++)
     {
         sparse_matrix->ia[i] = sparse_matrix->num_non_zeros;
@@ -214,6 +212,7 @@ void sparse_matrix_to_std(sparse_matrix_t sparse_matrix, matrix_t *matrix)
 // Функции вывода матриц
 void print_matrix(matrix_t matrix)
 {
+    printf("Матрица размером %zu на %zu:\n", matrix.rows, matrix.cols);
     for (size_t i = 0; i < matrix.rows; i++)
         for (size_t j = 0; j < matrix.cols; j++)
         {

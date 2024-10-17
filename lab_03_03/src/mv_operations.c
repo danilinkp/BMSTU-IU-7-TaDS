@@ -1,6 +1,6 @@
 #include "mv_operations.h"
 
-void matrix_mul_vector(matrix_t *matrix, vector_t *vector, vector_t *result)
+void matrix_mul_vector(const matrix_t *matrix, const vector_t *vector, vector_t *result)
 {
     for (size_t i = 0; i < matrix->rows; i++)
         for (size_t j = 0; j < matrix->cols; j++)
@@ -10,7 +10,7 @@ void matrix_mul_vector(matrix_t *matrix, vector_t *vector, vector_t *result)
         }
 }
 
-void sparse_matrix_mul_vector(sparse_matrix_t *sparse_matrix, vector_t *vector, vector_t *result)
+void sparse_matrix_mul_vector(const sparse_matrix_t *sparse_matrix, const vector_t *vector, vector_t *result)
 {
     for (size_t row = 0; row < sparse_matrix->rows; row++)
     {

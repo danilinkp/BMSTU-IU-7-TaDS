@@ -32,8 +32,10 @@ void fill_vector_rand(vector_t *vector);
 
 void print_vector_std(vector_t vector);
 
-void print_vector(vector_t vector);
+void print_sparse_vector(vector_t vector);
 
 int get_vector_element(const vector_t *vector, size_t index_j);
+
+void del_zero_elements(vector_t *vector);
 
 #endif //LAB_03_03_VECTOR_H

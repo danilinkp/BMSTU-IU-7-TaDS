@@ -12,6 +12,7 @@ set(SOURCES src/main.c
         src/matrix.c
         src/vector.c
         src/mv_operations.c
-        src/menu.c)
+        src/menu.c
+        src/timer.c)
 
 add_executable(app ${SOURCES})

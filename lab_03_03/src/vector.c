@@ -1,5 +1,6 @@
 #include "vector.h"
 #include <stdio.h>
+#include <time.h>
 
 
 void vector_free(vector_t *vector)
@@ -130,8 +131,8 @@ static size_t generate_random_index(vector_t vector, size_t num_filled)
 
 void fill_vector_rand(vector_t *vector)
 {
-    vector->num_non_zeros = read_vector_len(vector->rows);
-
+//    vector->num_non_zeros = read_vector_len(vector->rows);
+    srand(time(NULL));
     for (size_t i = 0; i < vector->num_non_zeros; i++)
     {
         vector->data[i] = rand() % 50 + 1;
@@ -148,9 +149,10 @@ void print_vector_std(vector_t vector)
     printf("Полный вектор:\n");
     for (size_t i = 0; i < vector.rows; i++)
         printf("%d\n", full_vector[i]);
+    free(full_vector);
 }
 
-void print_vector(vector_t vector)
+void print_sparse_vector(vector_t vector)
 {
     printf("Ненулевые значения вектора:\n");
     for (size_t i = 0; i < vector.num_non_zeros; i++)
@@ -161,10 +163,35 @@ void print_vector(vector_t vector)
         printf("%zu ", vector.ib[i]);
 }
 
+//void print_vector(vector_t vector, int choice)
+//{
+//
+//    if (choice == 1)
+//        print_vector_std(vector);
+//    else if (choice == 2)
+//        print_sparse_vector(vector);
+//}
+
 int get_vector_element(const vector_t *vector, size_t index_j)
 {
     for (size_t i = 0; i < vector->num_non_zeros; i++)
         if (vector->ib[i] == index_j)
             return vector->data[i];
     return 0;
+}
+
+void del_zero_elements(vector_t *vector)
+{
+    size_t count_zeros = 0;
+    for (size_t i = 0; i < vector->num_non_zeros; i++)
+    {
+        if (vector->data[i] == 0)
+            count_zeros++;
+        else
+        {
+            vector->data[i - count_zeros] = vector->data[i];
+            vector->ib[i - count_zeros] = vector->ib[i];
+        }
+    }
+    vector->num_non_zeros -= count_zeros;
 }
