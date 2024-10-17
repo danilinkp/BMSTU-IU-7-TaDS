@@ -51,10 +51,10 @@ static void print_table_header(void)
 
 static int print_time(size_t rows, size_t percentage)
 {
-    size_t num_non_zeros = (rows * rows) * (percentage / 100);
+    size_t len = (rows * rows * percentage) / 100;
     vector_t vector = {.rows = rows, .num_non_zeros = rows}, result = {.rows = rows, .num_non_zeros = rows};
     matrix_t matrix = {.rows = rows, .cols = rows};
-    sparse_matrix_t sparse_matrix = {.rows = rows, .cols = rows, .num_non_zeros = num_non_zeros};
+    sparse_matrix_t sparse_matrix = {.rows = rows, .cols = rows, .num_non_zeros = len};
 
     int rc = vector_alloc(&vector);
     if (rc != EXIT_SUCCESS)
@@ -81,18 +81,17 @@ static int print_time(size_t rows, size_t percentage)
         return rc;
     }
     fill_vector_rand(&vector);
-    fill_matrix_with_rand_elems(&matrix, &num_non_zeros);
+    fill_matrix_with_rand_elems(&matrix, &len);
     std_matrix_to_sparse(matrix, &sparse_matrix);
 
     double time_std = std_multiplication_time(&matrix, &vector, &result, NUM_OF_ITERATIONS);
-    double time_sparse = sparse_multiplication_time( % sparse_matrix,
-    &vector, &result, NUM_OF_ITERATIONS);
+    double time_sparse = sparse_multiplication_time(&sparse_matrix, &vector, &result, NUM_OF_ITERATIONS);
 
     size_t std_memory = matrix.rows * matrix.cols * sizeof(int);
     size_t sparse_memory =
             sparse_matrix.num_non_zeros * (sizeof(int) + sizeof(size_t)) + (sparse_matrix.rows + 1) * sizeof(size_t);
 
-    printf("| %-15zu| %-22zu| %-12lf| %-15lf| %-15zu| %-18zu|\n", rows, percentage, time_std,
+    printf("| %-15zu| %-22zu| %-12.2lf| %-15.2lf| %-15zu| %-18zu|\n", rows, percentage, time_std,
            time_sparse, std_memory, sparse_memory);
     printf("|----------------|-----------------------|-------------|----------------|----------------|-------------------|\n");
 
@@ -105,10 +104,10 @@ static int print_time(size_t rows, size_t percentage)
 
 void print_measurements(void)
 {
-    int sizes[] = {10, 50, 100, 500, 1000};
+    size_t sizes[] = {10, 50, 100, 500};
     size_t sizes_len = sizeof(sizes) / sizeof(sizes[0]);
 
-    int percents[] = {10, 25, 50, 75, 100};
+    size_t percents[] = {10, 25, 50, 75, 100};
     size_t percents_len = sizeof(percents) / sizeof(percents[0]);
 
     for (size_t i = 0; i < sizes_len; i++)

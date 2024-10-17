@@ -59,7 +59,7 @@ int main(void)
                            "2) Рандомное заполнение\n");
                     if (scanf("%d", &choice) != 1 || choice < 1 || choice > 2)
                     {
-                        printf("Выбран неверный пункт\n");
+                        printf("Выбран неверный пункт. Попробуйте еще раз.\n");
                         rc = WRONG_CHOICE_ERROR;
                         continue;
                     }
@@ -69,12 +69,13 @@ int main(void)
                     fill_matrix_with_coords(&matrix, &num_non_zeros);
                 else if (choice == 2)
                     fill_matrix_with_rand_elems(&matrix, &num_non_zeros);
+                printf("Матрица успешно введена\n");
                 std_matrix_to_sparse(matrix, &sparse_matrix);
                 is_matrix_readen = 1;
                 break;
             case READ_VECTOR:
                 choice = -1;
-                read_vector_sizes(&vector.rows, &vector.num_non_zeros, is_matrix_readed, matrix.cols);
+                read_vector_sizes(&vector.rows, &vector.num_non_zeros, is_matrix_readen, matrix.cols);
                 if (vector_alloc(&vector) != EXIT_SUCCESS)
                 {
                     printf("Ошибка выделения памяти под вектор-столбец.\n");

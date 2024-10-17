@@ -13,29 +13,38 @@ typedef struct
 
 enum vector_errors
 {
-    DATA_ALLOC_ERROR = 6,
+    VECTOR_DATA_ALLOC_ERROR = 6,
     INDEXES_ALLOC_ERROR,
-    ELEM_READ_ERROR,
+    VECTOR_ELEM_READ_ERROR,
     INDEX_READ_ERROR,
     VECTOR_LEN_READ_ERROR,
 };
 
+// Выделение памяти для вектора
 void vector_free(vector_t *vector);
 
+// Очищение памяти из под вектора
 int vector_alloc(vector_t *vector);
 
-size_t read_vector_sizes(size_t *rows, size_t *len, int is_matrix_readed, size_t matrix_cols);
+// Чтение размеров для вектора
+void read_vector_sizes(size_t *rows, size_t *len, int is_matrix_readed, size_t matrix_cols);
 
+// Чтение данных вектора
 void read_vector(vector_t *vector);
 
+// Заполнение вектора рандомными элементами
 void fill_vector_rand(vector_t *vector);
 
+// Вывод вектора в стандартном виде
 void print_vector_std(vector_t vector);
 
+// Вывод вектора в разреженном виде
 void print_sparse_vector(vector_t vector);
 
+// Получение элемента вектора по индексу
 int get_vector_element(const vector_t *vector, size_t index_j);
 
+// Удаление нулевых элементов вектора
 void del_zero_elements(vector_t *vector);
 
 #endif //LAB_03_03_VECTOR_H

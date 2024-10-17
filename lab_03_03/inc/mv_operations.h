@@ -4,9 +4,10 @@
 #include "matrix.h"
 #include "vector.h"
 
-
+// Стандартное умножение матриц
 void matrix_mul_vector(const matrix_t *matrix, const vector_t *vector, vector_t *result);
 
+// Умножение матриц в сокращенном виде
 void sparse_matrix_mul_vector(const sparse_matrix_t *sparse_matrix, const vector_t *vector, vector_t *result);
 
 

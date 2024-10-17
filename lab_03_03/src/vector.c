@@ -16,7 +16,7 @@ int vector_alloc(vector_t *vector)
 {
     vector->data = calloc(vector->num_non_zeros, sizeof(int));
     if (!vector->data)
-        return DATA_ALLOC_ERROR;
+        return VECTOR_DATA_ALLOC_ERROR;
 
     vector->ib = calloc(vector->num_non_zeros, sizeof(size_t));
     if (!vector->ib)
@@ -29,12 +29,12 @@ int vector_alloc(vector_t *vector)
 static void read_vector_element(size_t *ind, int *value, size_t rows)
 {
     int rc = EXIT_SUCCESS;
-    size_t tmp_ind;
+    int tmp_ind;
     int tmp_value;
     do
     {
         printf("Введите индекс вектора-столбца: ");
-        if (scanf("%zu", &tmp_ind) != 1 || tmp_ind < 0 || tmp_ind > rows)
+        if (scanf("%d", &tmp_ind) != 1 || tmp_ind < 0 || tmp_ind > (int) rows)
         {
             printf("Ошибка ввода индекса вектора-столбца\n");
             rc = INDEX_READ_ERROR;
@@ -42,7 +42,7 @@ static void read_vector_element(size_t *ind, int *value, size_t rows)
         }
         rc = EXIT_SUCCESS;
     } while (rc != EXIT_SUCCESS);
-    *ind = tmp_ind;
+    *ind = (size_t) tmp_ind;
 
     do
     {
@@ -50,24 +50,24 @@ static void read_vector_element(size_t *ind, int *value, size_t rows)
         if (scanf("%d", &tmp_value) != 1 || tmp_value == 0)
         {
             printf("Ошибка ввода значения вектора-столбца\n");
-            rc = ELEM_READ_ERROR;
+            rc = VECTOR_ELEM_READ_ERROR;
             continue;
         }
         rc = EXIT_SUCCESS;
     } while (rc != EXIT_SUCCESS);
-    *ind = tmp_ind;
+    *value = tmp_value;
 }
 
-size_t read_vector_sizes(size_t *rows, size_t *len, int is_matrix_readed, size_t matrix_cols)
+void read_vector_sizes(size_t *rows, size_t *len, int is_matrix_readed, size_t matrix_cols)
 {
-    size_t tmp_len, tmp_rows;
+    int tmp_len, tmp_rows;
     int rc = EXIT_SUCCESS;
     if (!is_matrix_readed)
     {
         do
         {
             printf("Введите максимальное количество элементов вектора-столбца: ");
-            if ((scanf("%zu", &tmp_rows)) != 1 || tmp_rows <= 0)
+            if ((scanf("%d", &tmp_rows)) != 1 || tmp_rows <= 0)
             {
                 printf("Количество элементов введено неверно.\n");
                 rc = VECTOR_LEN_READ_ERROR;
@@ -75,17 +75,17 @@ size_t read_vector_sizes(size_t *rows, size_t *len, int is_matrix_readed, size_t
             }
             rc = EXIT_SUCCESS;
         } while (rc != EXIT_SUCCESS);
-        *rows = tmp_rows;
+        *rows = (size_t) tmp_rows;
     }
     else
     {
-        printf("Кол-во строк вектора-столбца равно кол-ву столбцов матрицы.\n");
+        printf("Кол-во строк вектора-столбца равно кол-ву столбцов матрицы = %zu.\n", matrix_cols);
         *rows = matrix_cols;
     }
     do
     {
         printf("Введите количество ненулевых элементов вектора: ");
-        if (scanf("%zu", &tmp_len) != 1 || tmp_len < 0 || tmp_len > rows)
+        if (scanf("%d", &tmp_len) != 1 || tmp_len < 0 || (size_t) tmp_len > *rows)
         {
             printf("Введено неверное количество ненулевых элементов.\n");
             rc = VECTOR_LEN_READ_ERROR;
@@ -93,7 +93,7 @@ size_t read_vector_sizes(size_t *rows, size_t *len, int is_matrix_readed, size_t
         }
         rc = EXIT_SUCCESS;
     } while (rc != EXIT_SUCCESS);
-    *len = tmp_len;
+    *len = (size_t) tmp_len;
 }
 
 void read_vector(vector_t *vector)
@@ -158,19 +158,11 @@ void print_sparse_vector(vector_t vector)
     for (size_t i = 0; i < vector.num_non_zeros; i++)
         printf("%d ", vector.data[i]);
 
-    printf("Индексы ненулевых значений:\n");
+    printf("\nИндексы ненулевых значений:\n");
     for (size_t i = 0; i < vector.num_non_zeros; i++)
         printf("%zu ", vector.ib[i]);
 }
 
-//void print_vector(vector_t vector, int choice)
-//{
-//
-//    if (choice == 1)
-//        print_vector_std(vector);
-//    else if (choice == 2)
-//        print_sparse_vector(vector);
-//}
 
 int get_vector_element(const vector_t *vector, size_t index_j)
 {

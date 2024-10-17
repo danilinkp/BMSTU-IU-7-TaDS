@@ -1,7 +1,7 @@
 #ifndef LAB_03_03_TIMER_H
 #define LAB_03_03_TIMER_H
 
-#define NUM_OF_ITERATIONS 100
+#define NUM_OF_ITERATIONS 50
 
 #include "matrix.h"
 #include "vector.h"

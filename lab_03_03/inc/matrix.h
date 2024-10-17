@@ -27,8 +27,7 @@ typedef enum
     DATA_ALLOC_ERROR,
     ELEM_READ_ERROR,
     ROW_READ_ERROR,
-    COL_READ_ERROR,
-
+    COL_READ_ERROR
 } matrix_errors_t;
 
 // Выделение памяти под стандартную матрицу
