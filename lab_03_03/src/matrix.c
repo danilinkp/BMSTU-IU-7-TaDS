@@ -5,25 +5,27 @@
 // Функции выделения и освобождения памяти
 void matrix_free(matrix_t *matrix)
 {
-    for (size_t i = 0; i < matrix->rows; i++)
-    {
-        free(matrix->data[i]);
-        matrix->data[i] = NULL;
-    }
     free(matrix->data);
     matrix->data = NULL;
 }
 
+
 int matrix_alloc(matrix_t *matrix)
 {
-    matrix->data = calloc(matrix->rows, sizeof(int *));
+    matrix->data = malloc(matrix->rows * sizeof(int*) +
+                                  matrix->rows * matrix->cols * sizeof(int));
     if (!matrix->data)
         return DATA_ALLOC_ERROR;
     for (size_t i = 0; i < matrix->rows; i++)
+        matrix->data[i] = (int*)((char*) matrix->data +
+                matrix->rows * sizeof(int*) +
+                            i * matrix->cols * sizeof(int));
+    for (size_t i = 0; i < matrix->rows; i++)
     {
-        matrix->data[i] = calloc(matrix->cols, sizeof(int));
-        if (!matrix->data[i])
-            return DATA_ALLOC_ERROR;
+        for (size_t j = 0; j < matrix->cols; j++)
+        {
+            matrix->data[i][j] = 0;
+        }
     }
     return EXIT_SUCCESS;
 }
@@ -161,7 +163,14 @@ void fill_matrix_with_coords(matrix_t *matrix, size_t const *num_non_zeros)
     for (size_t i = 0; i < *num_non_zeros; i++)
     {
         read_matrix_element(&row, &col, &value, matrix->rows, matrix->cols);
-        matrix->data[row][col] = value;
+        if (matrix->data[row][col] == 0)
+            matrix->data[row][col] = value;
+        else
+        {
+            i--;
+            matrix->data[row][col] = value;
+            printf("Вы перезаписали ненулевой элемент\n");
+        }
     }
 }
 
@@ -173,7 +182,7 @@ void fill_matrix_with_rand_elems(matrix_t *matrix, size_t const *num_non_zeros)
         size_t i = rand() % matrix->rows;
         size_t j = rand() % matrix->cols;
         if (matrix->data[i][j] == 0)
-            matrix->data[i][j] = rand() % 50 + 1;
+            matrix->data[i][j] = rand() % 10 + 1;
         else
             k--;
     }

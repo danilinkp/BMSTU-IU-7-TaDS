@@ -20,9 +20,7 @@ int vector_alloc(vector_t *vector)
 
     vector->ib = calloc(vector->num_non_zeros, sizeof(size_t));
     if (!vector->ib)
-    {
         return INDEXES_ALLOC_ERROR;
-    }
     return EXIT_SUCCESS;
 }
 
@@ -151,6 +149,14 @@ void print_vector_std(vector_t vector)
         printf("%d\n", full_vector[i]);
     free(full_vector);
 }
+
+void sparse_vector_to_std(vector_t vector, vector_t *std)
+{
+    std->data = calloc(vector.rows, sizeof(int));
+    for (size_t i = 0; i < vector.num_non_zeros; i++)
+        std->data[vector.ib[i]] = vector.data[i];
+}
+
 
 void print_sparse_vector(vector_t vector)
 {

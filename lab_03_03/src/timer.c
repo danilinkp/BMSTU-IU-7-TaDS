@@ -17,28 +17,33 @@ static double std_multiplication_time(const matrix_t *matrix, const vector_t *ve
 {
     unsigned long long beg, end;
     double sum = 0;
+    vector_t std = {.rows = vector->rows, .num_non_zeros = vector->rows};
+    sparse_vector_to_std(*vector, &std);
     for (size_t i = 0; i < count; i++)
     {
         beg = microseconds_now();
-        matrix_mul_vector(matrix, vector, result);
+        matrix_mul_vector(matrix, &std, result);
         end = microseconds_now();
         sum += end - beg;
     }
+    vector_free(&std);
     return sum / count;
 }
 
 static double
-sparse_multiplication_time(const sparse_matrix_t *sparse_matrix, const vector_t *vector, vector_t *result, size_t count)
+sparse_multiplication_time(const sparse_matrix_t *sparse_matrix, const vector_t *vector, size_t count)
 {
     unsigned long long beg, end;
     double sum = 0;
+    vector_t result = {.rows = sparse_matrix->rows, .num_non_zeros = sparse_matrix->rows};
     for (size_t i = 0; i < count; i++)
     {
         beg = microseconds_now();
-        sparse_matrix_mul_vector(sparse_matrix, vector, result);
+        sparse_matrix_mul_vector(sparse_matrix, vector, &result);
         end = microseconds_now();
         sum += end - beg;
     }
+    vector_free(&result);
     return sum / count;
 }
 
@@ -52,17 +57,17 @@ static void print_table_header(void)
 static int print_time(size_t rows, size_t percentage)
 {
     size_t len = (rows * rows * percentage) / 100;
-    vector_t vector = {.rows = rows, .num_non_zeros = rows}, result = {.rows = rows, .num_non_zeros = rows};
+    size_t vec_len = (rows * percentage) / 100;
+    vector_t vector = {.rows = rows, .num_non_zeros = vec_len}, result_std = {.rows = rows, .num_non_zeros = rows};
     matrix_t matrix = {.rows = rows, .cols = rows};
     sparse_matrix_t sparse_matrix = {.rows = rows, .cols = rows, .num_non_zeros = len};
-
     int rc = vector_alloc(&vector);
     if (rc != EXIT_SUCCESS)
     {
         printf("Ошибка выделения памяти.\n");
         return rc;
     }
-    rc = vector_alloc(&result);
+    rc = vector_alloc(&result_std);
     if (rc != EXIT_SUCCESS)
     {
         printf("Ошибка выделения памяти.\n");
@@ -83,9 +88,8 @@ static int print_time(size_t rows, size_t percentage)
     fill_vector_rand(&vector);
     fill_matrix_with_rand_elems(&matrix, &len);
     std_matrix_to_sparse(matrix, &sparse_matrix);
-
-    double time_std = std_multiplication_time(&matrix, &vector, &result, NUM_OF_ITERATIONS);
-    double time_sparse = sparse_multiplication_time(&sparse_matrix, &vector, &result, NUM_OF_ITERATIONS);
+    double time_std = std_multiplication_time(&matrix, &vector, &result_std, NUM_OF_ITERATIONS);
+    double time_sparse = sparse_multiplication_time(&sparse_matrix, &vector, NUM_OF_ITERATIONS);
 
     size_t std_memory = matrix.rows * matrix.cols * sizeof(int);
     size_t sparse_memory =
@@ -98,7 +102,7 @@ static int print_time(size_t rows, size_t percentage)
     matrix_free(&matrix);
     sparse_matrix_free(&sparse_matrix);
     vector_free(&vector);
-    vector_free(&result);
+    vector_free(&result_std);
     return EXIT_SUCCESS;
 }
 

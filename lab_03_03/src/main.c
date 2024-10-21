@@ -69,7 +69,7 @@ int main(void)
                     fill_matrix_with_coords(&matrix, &num_non_zeros);
                 else if (choice == 2)
                     fill_matrix_with_rand_elems(&matrix, &num_non_zeros);
-                printf("Матрица успешно введена\n");
+                printf("Матрица успешно заполнена.\n");
                 std_matrix_to_sparse(matrix, &sparse_matrix);
                 is_matrix_readen = 1;
                 break;
@@ -99,6 +99,7 @@ int main(void)
                     read_vector(&vector);
                 else if (choice == 2)
                     fill_vector_rand(&vector);
+                printf("Вектор успешно заполнен.");
                 is_vector_readen = 1;
                 break;
             case PRINT_MATRIX:
@@ -184,13 +185,20 @@ int main(void)
                     break;
                 }
                 if (choice == 1)
-                    matrix_mul_vector(&matrix, &vector, &vector_result);
+                {
+                    vector_t std = {.rows = vector.rows, .num_non_zeros = vector.rows};
+                    sparse_vector_to_std(vector, &std);
+                    matrix_mul_vector(&matrix, &std, &vector_result);
+                }
                 else if (choice == 2)
                     sparse_matrix_mul_vector(&sparse_matrix, &vector, &vector_result);
                 is_mult = 1;
                 del_zero_elements(&vector_result);
                 printf("Результат умножения:\n");
-                print_sparse_vector(vector_result);
+                if (vector_result.num_non_zeros != 0)
+                    print_sparse_vector(vector_result);
+                else
+                    printf("Матрица нулевая.");
                 break;
 
             case COMPARING:

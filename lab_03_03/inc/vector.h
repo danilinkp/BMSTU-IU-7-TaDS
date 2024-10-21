@@ -47,4 +47,6 @@ int get_vector_element(const vector_t *vector, size_t index_j);
 // Удаление нулевых элементов вектора
 void del_zero_elements(vector_t *vector);
 
+void sparse_vector_to_std(vector_t vector, vector_t *std);
+
 #endif //LAB_03_03_VECTOR_H
