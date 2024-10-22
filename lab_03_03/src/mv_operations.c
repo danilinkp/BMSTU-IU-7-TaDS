@@ -17,7 +17,6 @@ void matrix_mul_vector(const matrix_t *m1, const vector_t *vec, vector_t *dst)
 
 void sparse_matrix_mul_vector(const sparse_matrix_t *matrix, const vector_t *vector, vector_t *result)
 {
-//    size_t *IP = calloc(vector->rows, sizeof(size_t));
     size_t *IP = malloc(vector->rows * sizeof(size_t));
     for (size_t i = 0; i < vector->rows; ++i)
         IP[i] = 0;

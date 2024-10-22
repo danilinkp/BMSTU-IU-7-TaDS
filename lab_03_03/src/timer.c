@@ -12,7 +12,6 @@ static unsigned long long microseconds_now(void)
 
     return value.tv_sec * 1000ULL * 1000ULL + value.tv_usec;
 }
-
 static double std_multiplication_time(const matrix_t *matrix, const vector_t *vector, vector_t *result, size_t count)
 {
     unsigned long long beg, end;
@@ -111,7 +110,7 @@ void print_measurements(void)
     size_t sizes[] = {10, 50, 100, 500};
     size_t sizes_len = sizeof(sizes) / sizeof(sizes[0]);
 
-    size_t percents[] = {10, 25, 50, 75, 100};
+    size_t percents[] = {10, 25, 35, 50, 75, 100};
     size_t percents_len = sizeof(percents) / sizeof(percents[0]);
 
     for (size_t i = 0; i < sizes_len; i++)

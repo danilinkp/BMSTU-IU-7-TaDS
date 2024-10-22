@@ -261,9 +261,3 @@ void print_sparse_matrix(sparse_matrix_t sparse_matrix)
             printf("%zu ", sparse_matrix.ia[i]);
     }
 }
-
-//1 2   2   12
-//0 4 x 5 = 20
-//2 3       19
-//
-//3 * 2 x 2 * 1 = 3 * 1
