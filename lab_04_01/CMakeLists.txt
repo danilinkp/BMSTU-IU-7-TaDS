@@ -11,6 +11,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror -Wpedantic -Wextra -Wfloat-equ
 set(SOURCES src/main.c
         src/array_stack.c
         src/list_stack.c
-        src/print_sequence.c)
+        src/stack.c
+        src/menu.c
+        src/timer.c)
 
 add_executable(app ${SOURCES})

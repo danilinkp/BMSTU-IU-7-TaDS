@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void init(list_stack_t *stack, int max_size)
+void list_stack_init(list_stack_t *stack, int max_size)
 {
     stack->ps = NULL;
     stack->size = 0;
@@ -12,24 +12,18 @@ void init(list_stack_t *stack, int max_size)
     stack->free_elems_size = 0;
 }
 
-int is_empty(list_stack_t *stack)
+int is_list_stack_empty(list_stack_t *stack)
 {
     return stack->ps == NULL;
 }
 
-int is_full(list_stack_t *stack)
+int is_list_stack_full(list_stack_t *stack)
 {
     return stack->size >= stack->max_size;
 }
 
-int push(list_stack_t *stack, int value)
+int list_stack_push(list_stack_t *stack, int value)
 {
-    if (is_full(stack))
-    {
-        printf("Ошибка добавления элемента. Стек переполнен\n");
-        return STACK_OVERFLOW;
-    }
-
     node_t *new_elem = malloc(sizeof(node_t));
     if (!new_elem)
     {
@@ -46,14 +40,8 @@ int push(list_stack_t *stack, int value)
     return EXIT_SUCCESS;
 }
 
-int pop(list_stack_t *stack, int *value)
+int list_stack_pop(list_stack_t *stack, int *value)
 {
-    if (is_empty(stack))
-    {
-        printf("Ошибка извлечения элемента. Стек пуст.\n");
-        return STACK_UNDERFLOW;
-    }
-
     *value = stack->ps->data;
     node_t *next_node = stack->ps->next;
     stack->size--;
@@ -76,37 +64,30 @@ int pop(list_stack_t *stack, int *value)
     return EXIT_SUCCESS;
 }
 
-int peak(list_stack_t *stack, int *value)
+int list_stack_peek(list_stack_t *stack)
 {
-    if (is_empty(stack))
-    {
-        printf("Ошибка извлечения элемента. Стек пуст.\n");
-        return STACK_UNDERFLOW;
-    }
-
-    *value = stack->ps->data;
-
-    return EXIT_SUCCESS;
+    return stack->ps->data;
 }
 
 void print_list_stack(list_stack_t *stack)
 {
     list_stack_t tmp_stack;
-    init(&tmp_stack, stack->max_size);
+    list_stack_init(&tmp_stack, stack->max_size);
 
     int tmp_value;
-    while (!(is_empty(stack)))
+    while (!(is_list_stack_empty(stack)))
     {
-        pop(stack, &tmp_value);
+        list_stack_pop(stack, &tmp_value);
         printf("Адресс элемента - %p, значение элемента - %d\n", (void *) stack->ps, tmp_value);
-        push(&tmp_stack, tmp_value);
+        list_stack_push(&tmp_stack, tmp_value);
     }
     printf("\n");
-    while (!is_empty(&tmp_stack))
+    while (!is_list_stack_empty(&tmp_stack))
     {
-        pop(&tmp_stack, &tmp_value);
-        push(stack, tmp_value);
+        list_stack_pop(&tmp_stack, &tmp_value);
+        list_stack_push(stack, tmp_value);
     }
+    free_list_stack(&tmp_stack);
 }
 
 void print_free_list(list_stack_t *stack)
@@ -115,4 +96,21 @@ void print_free_list(list_stack_t *stack)
     free_node_t *current = stack->free_list;
     for (; current; current = current->next)
         printf("Освобожденная область памяти: %p\n", stack->free_list->address);
+}
+
+void free_list_stack(list_stack_t *stack)
+{
+    node_t *next;
+    for (; stack->ps; stack->ps = next)
+    {
+        next = stack->ps->next;
+        free(stack->ps);
+    }
+
+    free_node_t *next_free;
+    for (; stack->free_list; stack->free_list = next_free)
+    {
+        next_free = stack->free_list->next;
+        free(stack->free_list);
+    }
 }
