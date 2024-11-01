@@ -1,6 +1,7 @@
 #include "stack.h"
 #include "menu.h"
 #include "timer.h"
+#include "tools.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -22,7 +23,7 @@ int main(void)
     while (action != EXIT)
     {
         menu_print();
-        if (scanf("%d", &action) != 1)
+        if (read_int(&action) != EXIT_SUCCESS)
         {
             printf("Ошибка: Пожалуйста, введите число.\n");
             continue;
@@ -47,7 +48,7 @@ int main(void)
                 do
                 {
                     printf("Введите число, которое хотите добавить в стек: ");
-                    if (scanf("%d", &value) != 1)
+                    if (read_int(&value) != EXIT_SUCCESS)
                     {
                         rc = WRONG_VALUE_READ_ERROR;
                         printf("Ошибка ввода элемента. Попробуйте еще раз.\n");
@@ -68,7 +69,7 @@ int main(void)
                 do
                 {
                     printf("Введите число, которое хотите добавить в стек: ");
-                    if (scanf("%d", &value) != 1)
+                    if (read_int(&value) != EXIT_SUCCESS)
                     {
                         rc = WRONG_VALUE_READ_ERROR;
                         printf("Ошибка ввода элемента. Попробуйте еще раз.\n");
@@ -105,7 +106,7 @@ int main(void)
                     break;
                 }
                 printf("Текущее состояние стека:\n");
-                print_arr_stack(&arr_stack);
+                print_arr_stack(stdout, &arr_stack);
                 break;
             case PRINT_LIST_STACK:
                 if (is_list_stack_empty(&list_stack))
@@ -114,7 +115,7 @@ int main(void)
                     break;
                 }
                 printf("Текущее состояние стека:\n");
-                print_list_stack(&list_stack);
+                print_list_stack(stdout, &list_stack);
                 break;
             case PRINT_FREE_LIST:
                 if (list_stack.free_elems_size == 0)
@@ -124,13 +125,89 @@ int main(void)
                 }
                 print_free_list(&list_stack);
                 break;
+            case ADD_SEQ_TO_ARR_STACK:
+                rc = EXIT_SUCCESS;
+                int len;
+                do
+                {
+                    printf("Введите кол-во чисел в последовательность (не больше %d): ", MAX_STACK_SIZE - arr_stack.ps - 1);
+                    if (read_int(&len) != EXIT_SUCCESS)
+                    {
+                        printf("Введите валидное число.\n");
+                        rc = WRONG_VALUE_READ_ERROR;
+                        continue;
+                    }
+                    rc = EXIT_SUCCESS;
+                }
+                while (rc != EXIT_SUCCESS);
+
+                if (len == 0)
+                {
+                    printf("Ничего не введено.\n");
+                    break;
+                }
+                printf("Введите последовательность: \n");
+                int i = 0;
+                do
+                {
+                    printf("Введите %d член последовательности: ", i + 1);
+                    if (read_int(&value) != EXIT_SUCCESS)
+                    {
+                        printf("Число введено неверно.\n");
+                        rc = WRONG_VALUE_READ_ERROR;
+                        continue;
+                    }
+                    i++;
+                    arr_stack_push(&arr_stack, value);
+                    rc = EXIT_SUCCESS;
+                }
+                while (rc != EXIT_SUCCESS || i < len);
+                break;
+            case ADD_SEQ_TOLIST_STACK:
+                rc = EXIT_SUCCESS;
+                do
+                {
+                    printf("Введите кол-во чисел в последовательность (не больше %d)", MAX_STACK_SIZE - list_stack.size);
+                    if (read_int(&len) != EXIT_SUCCESS)
+                    {
+                        printf("Введите валидное число.\n");
+                        rc = WRONG_VALUE_READ_ERROR;
+                        continue;
+                    }
+                    rc = EXIT_SUCCESS;
+                }
+                while (rc != EXIT_SUCCESS);
+
+                if (len == 0)
+                {
+                    printf("Ничего не введено.\n");
+                    break;
+                }
+
+                printf("Введите последовательность: \n");
+                i = 0;
+                do
+                {
+                    printf("Введите %d член последовательности: ", i + 1);
+                    if (read_int(&value) != EXIT_SUCCESS)
+                    {
+                        printf("Число введено неверно.\n");
+                        rc = WRONG_VALUE_READ_ERROR;
+                        continue;
+                    }
+                    i++;
+                    list_stack_push(&list_stack, value);
+                    rc = EXIT_SUCCESS;
+                }
+                while (rc != EXIT_SUCCESS || i < len);
+                break;
             case PRINT_SEQUENCE_ON_ARR:
                 if (is_arr_stack_empty(&arr_stack))
                 {
                     printf("Выводить нечего. Стек пуст.\n");
                     break;
                 }
-                arr_stack_print_sequence(&arr_stack);
+                arr_stack_print_sequence(stdout, &arr_stack);
                 break;
             case PRINT_SEQUENCE_ON_LIST:
                 if (is_list_stack_empty(&list_stack))
@@ -138,7 +215,7 @@ int main(void)
                     printf("Выводить нечего. Стек пуст.\n");
                     break;
                 }
-                list_stack_print_sequence(&list_stack);
+                list_stack_print_sequence(stdout, &list_stack);
                 break;
             case PRINT_MEASUREMENTS:
                 print_measurements();
@@ -148,6 +225,6 @@ int main(void)
                 break;
         }
     }
-
+    free_list_stack(&list_stack);
     return EXIT_SUCCESS;
 }

@@ -1,6 +1,8 @@
 #ifndef _LIST_STACK_H_
 #define _LIST_STACK_H_
 
+#include <stdio.h>
+
 // Узел списка для стека
 typedef struct node
 {
@@ -27,8 +29,6 @@ typedef struct
 
 enum errors
 {
-    STACK_OVERFLOW = 1,
-    STACK_UNDERFLOW,
     NODE_ALLOC_ERROR,
     FREE_NODE_ALLOC_ERROR
 };
@@ -45,7 +45,7 @@ int list_stack_pop(list_stack_t *stack, int *value);
 
 int list_stack_peek(list_stack_t *stack);
 
-void print_list_stack(list_stack_t *stack);
+void print_list_stack(FILE *file, list_stack_t *stack);
 
 void print_free_list(list_stack_t *stack);
 

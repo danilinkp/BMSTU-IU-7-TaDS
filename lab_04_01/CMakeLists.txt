@@ -13,6 +13,7 @@ set(SOURCES src/main.c
         src/list_stack.c
         src/stack.c
         src/menu.c
-        src/timer.c)
+        src/timer.c
+        src/tools.c)
 
 add_executable(app ${SOURCES})

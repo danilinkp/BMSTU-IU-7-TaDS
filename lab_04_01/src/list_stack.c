@@ -1,6 +1,5 @@
 #include "list_stack.h"
 #include <stdlib.h>
-#include <stdio.h>
 
 void list_stack_init(list_stack_t *stack, int max_size)
 {
@@ -52,7 +51,7 @@ int list_stack_pop(list_stack_t *stack, int *value)
         printf("Ошибка выделения памяти под узел списка освобожденной памяти.\n");
         return FREE_NODE_ALLOC_ERROR;
     }
-    free_node->address = stack->ps;
+    free_node->address = (void *) stack->ps;
     free_node->next = stack->free_list;
     stack->free_list = free_node;
     stack->free_elems_size++;
@@ -69,7 +68,7 @@ int list_stack_peek(list_stack_t *stack)
     return stack->ps->data;
 }
 
-void print_list_stack(list_stack_t *stack)
+void print_list_stack(FILE *file, list_stack_t *stack)
 {
     list_stack_t tmp_stack;
     list_stack_init(&tmp_stack, stack->max_size);
@@ -77,11 +76,12 @@ void print_list_stack(list_stack_t *stack)
     int tmp_value;
     while (!(is_list_stack_empty(stack)))
     {
+        fprintf(file, "Адресс элемента - %p, ", (void *) stack->ps);
         list_stack_pop(stack, &tmp_value);
-        printf("Адресс элемента - %p, значение элемента - %d\n", (void *) stack->ps, tmp_value);
+        fprintf(file, "значение элемента - %d\n", tmp_value);
         list_stack_push(&tmp_stack, tmp_value);
     }
-    printf("\n");
+    fprintf(file, "\n");
     while (!is_list_stack_empty(&tmp_stack))
     {
         list_stack_pop(&tmp_stack, &tmp_value);
@@ -95,7 +95,7 @@ void print_free_list(list_stack_t *stack)
     printf("Список свободных областей:\n");
     free_node_t *current = stack->free_list;
     for (; current; current = current->next)
-        printf("Освобожденная область памяти: %p\n", stack->free_list->address);
+        printf("Освобожденная область памяти: %p\n", current->address);
 }
 
 void free_list_stack(list_stack_t *stack)
