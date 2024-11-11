@@ -12,10 +12,7 @@ void arr_stack_print_sequence(FILE *file, array_stack_t *stack)
         fprintf(file, "%d\n", pop_elem);
     arr_stack_push(&tmp_stack, pop_elem);
 
-//    array_stack_t result;
-//    arr_stack_init(&result, stack->max_size);
     int tmp_elem;
-
     int cur_len = 0;
     while (!is_arr_stack_empty(stack))
     {
@@ -66,9 +63,6 @@ void list_stack_print_sequence(FILE *file, list_stack_t *stack)
     if (is_list_stack_empty(stack))
         fprintf(file, "%d\n", pop_elem);
     list_stack_push(&tmp_stack, pop_elem);
-
-//    list_stack_t result;
-//    list_stack_init(&result, stack->max_size);
 
     int cur_len = 0;
     while (!is_list_stack_empty(stack))
