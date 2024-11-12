@@ -12,7 +12,7 @@ set(SOURCES src/main.c
         src/array_queue.c
         src/list_queue.c
         src/queue.c
-        src/request.c
-        src/queue_simulation.c)
+        src/queue_simulation.c
+        src/menu.c)
 
 add_executable(app ${SOURCES})
