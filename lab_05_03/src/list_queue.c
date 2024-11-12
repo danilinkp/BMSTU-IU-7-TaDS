@@ -2,11 +2,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void list_queue_init(list_queue_t *queue)
+enum mem_errors
+{
+    NODE_ALLOC_ERROR = 3,
+    FREE_NODE_ALLOC_ERROR,
+};
+
+void list_queue_init(list_queue_t *queue, int max_size)
 {
     queue->head = NULL;
     queue->tail = NULL;
     queue->size = 0;
+    queue->max_size = max_size;
 
     queue->free_list = NULL;
     queue->free_elems_size = 0;
@@ -19,14 +26,11 @@ int is_list_queue_empty(list_queue_t *queue)
 
 int is_list_queue_full(list_queue_t *queue)
 {
-    return queue->size == MAX_QUEUE_SIZE;
+    return queue->size == queue->max_size;
 }
 
 int list_enqueue(list_queue_t *queue, request_t elem)
 {
-    if (is_list_queue_full(queue))
-        return QUEUE_OVERFLOW;
-
     node_t *new_elem = malloc(sizeof(node_t));
     if (!new_elem)
     {
@@ -55,9 +59,6 @@ int list_enqueue(list_queue_t *queue, request_t elem)
 
 int list_dequeue(list_queue_t *queue, request_t *removed_elem)
 {
-    if (is_list_queue_empty(queue))
-        return QUEUE_UNDERFLOW;
-
     *removed_elem = queue->head->data;
     node_t *next_elem = queue->head->next;
 
@@ -84,7 +85,7 @@ int list_dequeue(list_queue_t *queue, request_t *removed_elem)
     return EXIT_SUCCESS;
 }
 
-void list_queue_print(list_queue_t *queue)
+void print_list_queue(list_queue_t *queue)
 {
     node_t *curr = queue->head;
     for (; curr; curr = curr->next)
@@ -92,6 +93,14 @@ void list_queue_print(list_queue_t *queue)
         printf("Адресс элемента - %p, ", (void *) curr);
         printf("значение элемента - %d\n", curr->data.id);
     }
+}
+
+void print_free_area(list_queue_t *queue)
+{
+    printf("Список свободных областей:\n");
+    free_node_t *current = queue->free_list;
+    for (; current; current = current->next)
+        printf("Освобожденная область памяти: %p\n", current->address);
 }
 
 void free_queue(list_queue_t *queue)
