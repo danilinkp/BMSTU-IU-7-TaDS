@@ -64,7 +64,12 @@ void print_queue(queue_t *queue)
         print_list_queue(&(queue->list_queue));
 }
 
-// TODO: Добавить функцию возвращения длины очереди
+int queue_length(queue_t *queue)
+{
+    if (queue->type == ARRAY_QUEUE)
+        return queue->arr_queue.size;
+    return queue->list_queue.size;
+}
 
 void queue_print_free_area(queue_t *queue)
 {

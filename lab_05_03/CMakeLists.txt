@@ -13,6 +13,7 @@ set(SOURCES src/main.c
         src/list_queue.c
         src/queue.c
         src/queue_simulation.c
-        src/menu.c)
+        src/menu.c
+        src/timer.c)
 
 add_executable(app ${SOURCES})

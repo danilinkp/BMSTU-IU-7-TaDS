@@ -36,6 +36,8 @@ int dequeue(queue_t *queue, request_t *removed_elem);
 
 void print_queue(queue_t *queue);
 
+int queue_length(queue_t *queue);
+
 void queue_print_free_area(queue_t *queue);
 
 void queue_free(queue_t *queue);
