@@ -1,142 +1,141 @@
 #include "queue_simulation.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <math.h>
 
-#define TOTAL_REQUESTS 1000
-#define INITIAL_REQUESTS 100
-#define EPS 1e-8
-
-/// Определение типов событий
-typedef enum
+static double calculate_theoretical_time(int oa2_activations, int oa1_requests, double t1_start, double t1_end,
+                                         double t2_start, double t2_end)
 {
-    ARRIVAL,
-    OA1_COMPLETION,
-    OA2_COMPLETION
-} event_type_t;
+    double avg_t1 = (t1_start + t1_end) / 2.0;
+    double avg_t2 = (t2_start + t2_end) / 2.0;
 
-// Функция для генерации случайного времени в заданном диапазоне
-static double generate_random_time(double min_time, double max_time)
-{
-    return (max_time - min_time) * ((double) rand() / RAND_MAX) + min_time;
+    double time_oa1 = avg_t1 * oa1_requests;
+    double time_oa2 = avg_t2 * oa2_activations;
+
+    return (time_oa1 > time_oa2) ? time_oa1 : time_oa2;
 }
 
-// Основная функция симуляции
-void simulation_queue(queue_t *queue1, queue_t *queue2, double t1_start, double t1_end,
-                      double t2_start, double t2_end, double probability)
+void simulation_queue(queue_t *queue1, queue_t *queue2,
+                      double t1_start, double t1_end,
+                      double t2_start, double t2_end,
+                      double probability)
 {
-    int processed_in_oa2 = 0;     // Количество заявок, вышедших из ОА2
-    int processed_in_oa1 = 0;     // Количество заявок, обслуженных ОА1
-    double idle_time_oa2 = 0.0;   // Время простоя ОА2
-    double total_time = 0.0;      // Общее время моделирования
 
-    double next_arrival_time = generate_random_time(t1_start, t1_end); // Время для следующей новой заявки
-    double oa1_end_time = 0.0;    // Время завершения работы в ОА1
-    double oa2_end_time = 0.0;    // Время завершения работы в ОА2
+    service_unit_t oa1 = { .is_busy = 0, .end_time = 0.0 };
+    service_unit_t oa2 = { .is_busy = 0, .end_time = 0.0 };
 
-    // Средние времена для расчетного времени
-    double avg_arrival_time = (t1_start + t1_end) / 2;
-    double avg_processing_time_oa2 = (t2_start + t2_end) / 2;
+    double current_time = 0.0;
+    int processed_requests = 0;
+    int oa1_activations = 0;
+    double total_oa2_idle_time = 0.0;
+    double queue_stats[2] = { 0.0, 0.0 };
+    int stat_points = 0;
 
-    // Для расчета средней длины очереди
-    double cumulative_queue1_length = 0.0;
-    double cumulative_queue2_length = 0.0;
-    int snapshots = 0;
-
-    srand(time(NULL)); // Инициализация генератора случайных чисел
-
-    // Начальное заполнение первой очереди заявками
-    for (int i = 0; i < INITIAL_REQUESTS; i++)
+    // Инициализация первой очереди
+    for (int i = 0; i < 100; i++)
     {
-        request_t initial_request = { .id = i + 1, .processing_time = 0 };
-        enqueue(queue1, initial_request);
+        request_t req = { i, current_time };
+        enqueue(queue1, req);
     }
 
-    // Основной цикл симуляции
-    while (processed_in_oa2 < TOTAL_REQUESTS)
+    while (processed_requests < 1000)
     {
-        // Определяем текущее время как минимальное из всех запланированных событий
-        total_time = (next_arrival_time < oa1_end_time && next_arrival_time < oa2_end_time) ? next_arrival_time
-                                                                                            : (oa1_end_time
-                                                                                               < oa2_end_time
-                                                                                               ? oa1_end_time
-                                                                                               : oa2_end_time);
-
-        // Обработка событий, происходящих в один и тот же момент времени
-
-        // 1. Если событие завершения обработки заявки в ОА2 происходит в текущее время
-        if (fabs(total_time - oa2_end_time) < EPS && !is_queue_empty(queue2))
+        // Обработка первого аппарата.
+        if (!oa1.is_busy && !is_queue_empty(queue1))
         {
-            request_t request;
-            dequeue(queue2, &request);
-            request.processing_time = generate_random_time(t2_start, t2_end); // Время обработки в ОА2
-            oa2_end_time = total_time + request.processing_time;
-            processed_in_oa2++;
-        }
-        else if (is_queue_empty(queue2))
-        {
-            idle_time_oa2 += total_time - oa2_end_time;
-            oa2_end_time = total_time;
+            request_t req;
+            dequeue(queue1, &req);
+            oa1.is_busy = 1;
+            oa1.current_request = req;
+            double service_time = t1_start + ((double) rand() / RAND_MAX) * (t1_end - t1_start);
+            oa1.end_time = current_time + service_time;
+            oa1_activations++;
         }
 
-        // 2. Если событие завершения обработки заявки в ОА1 происходит в текущее время
-        if (fabs(total_time - oa1_end_time) < EPS && !is_queue_empty(queue1))
+        // Обработка второго аппрата.
+        if (!oa2.is_busy && !is_queue_empty(queue2))
         {
-            request_t request;
-            dequeue(queue1, &request);
-            request.processing_time = generate_random_time(t1_start, t1_end); // Время обработки в ОА1
-            oa1_end_time = total_time + request.processing_time;
-            processed_in_oa1++;
+            request_t req;
+            dequeue(queue2, &req);
+            oa2.is_busy = 1;
+            oa2.current_request = req;
+            double service_time = t2_start + ((double) rand() / RAND_MAX) * (t2_end - t2_start);
+            oa2.end_time = current_time + service_time;
+        }
 
-            // Переход в очередь 2 с вероятностью 1 - P
-            if (((double) rand() / RAND_MAX) > probability)
-                enqueue(queue2, request);
+        // Находим ближайшее время завершения обработки
+        double next_time = 0.0;
+        int next_unit = 0; // 1 - ОА1, 2 - ОА2
+
+        if (oa1.is_busy && oa2.is_busy)
+        {
+            if (oa1.end_time <= oa2.end_time)
+            {
+                next_time = oa1.end_time;
+                next_unit = 1;
+            }
             else
-                enqueue(queue1, request); // Повторное добавление в очередь 1
+            {
+                next_time = oa2.end_time;
+                next_unit = 2;
+            }
+        }
+        else if (oa1.is_busy)
+        {
+            next_time = oa1.end_time;
+            next_unit = 1;
+        }
+        else if (oa2.is_busy)
+        {
+            next_time = oa2.end_time;
+            next_unit = 2;
         }
 
-        // 3. Если событие прихода новой заявки происходит в текущее время
-        if (fabs(total_time - next_arrival_time) < EPS
-            && processed_in_oa2 + processed_in_oa1 < TOTAL_REQUESTS + INITIAL_REQUESTS)
+        if (!oa2.is_busy)
+            total_oa2_idle_time += (next_time - current_time);
+        current_time = next_time;
+
+        if (next_unit == 1)
         {
-            request_t new_request = { .id = processed_in_oa2 + processed_in_oa1 + 1, .processing_time = 0 };
-            enqueue(queue1, new_request);
-            next_arrival_time += generate_random_time(t1_start, t1_end); // Время следующего прихода
+            if (((double) rand() / RAND_MAX) < probability)
+                enqueue(queue1, oa1.current_request);
+            else
+                enqueue(queue2, oa1.current_request);
+            oa1.is_busy = 0;
         }
-
-        // Сбор данных о длине очередей для среднего значения
-        cumulative_queue1_length += queue_length(queue1);
-        cumulative_queue2_length += queue_length(queue2);
-        snapshots++;
-
-        // Периодический вывод информации после каждых 100 заявок в ОА2
-        if (processed_in_oa2 % 100 == 0 && processed_in_oa2 > 0)
+        else
         {
-            printf("Обработано в ОА2: %d заявок\n", processed_in_oa2);
-            printf("Текущая длина очереди 1: %d\n", queue_length(queue1));
-            printf("Средняя длина очереди 1: %.2f\n", cumulative_queue1_length / snapshots);
-            printf("Текущая длина очереди 2: %d\n", queue_length(queue2));
-            printf("Средняя длина очереди 2: %.2f\n\n", cumulative_queue2_length / snapshots);
+            enqueue(queue1, oa2.current_request);
+            oa2.is_busy = 0;
+            processed_requests++;
+
+            if (processed_requests % 100 == 0)
+            {
+                queue_stats[0] += queue_length(queue1);
+                queue_stats[1] += queue_length(queue2);
+                stat_points++;
+                printf("Обработано заявок во втором аппарате: %d\n", processed_requests);
+                printf("Текущая длины очереди: Q1 = %d, Q2 = %d\n",
+                       queue_length(queue1), queue_length(queue2));
+                printf("Средние длины очередей: Q1 = %.2f, Q2= %.2f\n",
+                       queue_stats[0] / stat_points,
+                       queue_stats[1] / stat_points);
+            }
         }
     }
+    double theoretical_time = calculate_theoretical_time(1000, oa1_activations,
+                                                         t1_start, t1_end,
+                                                         t2_start, t2_end);
 
-    // Итоговые результаты
-    printf("\nИтоговые результаты:\n");
-    printf("Общее время моделирования: %.2f\n", total_time);
-    printf("Время простоя ОА2: %.2f\n", idle_time_oa2);
-    printf("Количество обработанных заявок в ОА1: %d\n", processed_in_oa1);
-    printf("Средняя длина очереди 1: %.2f\n", cumulative_queue1_length / snapshots);
-    printf("Средняя длина очереди 2: %.2f\n", cumulative_queue2_length / snapshots);
+    double time_difference = fabs(current_time - theoretical_time);
+    double difference_percent = (time_difference / theoretical_time) * 100.0;
 
-    // Расчетное время моделирования
-    double expected_time_arrival = avg_arrival_time * (INITIAL_REQUESTS + processed_in_oa1);
-    double expected_time_processing = avg_processing_time_oa2 * processed_in_oa2;
-
-    // Процент погрешности
-    double error_percentage_arrival = ((total_time - expected_time_arrival) / expected_time_arrival) * 100;
-    double error_percentage_processing = ((total_time - expected_time_processing) / expected_time_processing) * 100;
-
-    printf("\nПроцент погрешности по приходу заявок: %.2f%%\n", error_percentage_arrival);
-    printf("Процент погрешности по обработке заявок: %.2f%%\n", error_percentage_processing);
+    printf("\nИтоги симуляции:\n");
+    printf("Общее время работы: %.2f\n", current_time);
+    printf("Теоретический рассчёт: %.2f\n", theoretical_time);
+    printf("Процент погрешности: %.2f%%\n", difference_percent);
+    printf("Время простоя ОА2: %.2f\n", total_oa2_idle_time);
+    printf("Количество срабатываний ОА1: %d\n", oa1_activations);
+    printf("Средняя длина первой очереди %.2f\n", queue_stats[0] / stat_points);
+    printf("Средняя длина второй очереди: %.2f\n", queue_stats[1] / stat_points);
 }

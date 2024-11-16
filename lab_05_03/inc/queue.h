@@ -24,22 +24,25 @@ typedef struct {
     list_queue_t list_queue;  // Очередь на списке
 } queue_t;
 
+//Инициализация очереди
 void queue_init(queue_t *queue, queue_type_t queue_type, int max_size);
 
+//Проверка на пустоты очереди
 int is_queue_empty(queue_t *queue);
 
+//Проверка на заполненность очереди
 int is_queue_full(queue_t *queue);
 
+//Добавление элемента в очередь
 int enqueue(queue_t *queue, request_t elem);
 
+//Извлечение элемемнта из очереди
 int dequeue(queue_t *queue, request_t *removed_elem);
 
-void print_queue(queue_t *queue);
-
+// Получение длины очереди
 int queue_length(queue_t *queue);
 
-void queue_print_free_area(queue_t *queue);
-
+//Очищение очереди
 void queue_free(queue_t *queue);
 
 #endif //LAB_05_03_QUEUE_H

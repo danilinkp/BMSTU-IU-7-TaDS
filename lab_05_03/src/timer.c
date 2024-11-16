@@ -33,7 +33,7 @@ static double arr_stack_push_time(arr_queue_t *queue, request_t seq[], int seq_l
         arr_queue_init(queue, seq_len);
         beg = microseconds_now();
         for (int c = 0; c < seq_len; c++)
-            arr_enqueue(queue, seq[i]);
+            arr_enqueue(queue, seq[c]);
         end = microseconds_now();
         sum += end - beg;
     }
@@ -49,7 +49,7 @@ static double list_stack_push_time(list_queue_t *queue, request_t seq[], int seq
         list_queue_init(queue, seq_len);
         beg = microseconds_now();
         for (int c = 0; c < seq_len; c++)
-            list_enqueue(queue, seq[i]);
+            list_enqueue(queue, seq[c]);
         end = microseconds_now();
         sum += end - beg;
     }
@@ -64,7 +64,7 @@ static double arr_stack_pop_time(arr_queue_t *queue, request_t seq[], int seq_le
     {
         arr_queue_init(queue, seq_len);
         for (int c = 0; c < seq_len; c++)
-            arr_enqueue(queue, seq[i]);
+            arr_enqueue(queue, seq[c]);
         beg = microseconds_now();
         for (int c = 0; c < seq_len; c++)
             arr_dequeque(queue);
@@ -83,7 +83,7 @@ static double list_stack_pop_time(list_queue_t *queue, request_t seq[], int seq_
     {
         list_queue_init(queue, seq_len);
         for (int c = 0; c < seq_len; c++)
-            list_enqueue(queue, seq[i]);
+            list_enqueue(queue, seq[c]);
         beg = microseconds_now();
         for (int c = 0; c < seq_len; c++)
             list_dequeue(queue, &tmp);
@@ -112,7 +112,7 @@ static void print_time(int seq_len, request_t seq[])
            time_arr_push, time_list_push, time_arr_pop, time_list_pop, arr_queue_memory, list_queue_memory);
     printf("|----------------|-----------------|-----------------|-----------------|-----------------|-----------------|-----------------|\n");
 
-    free_queue(&list_queue);
+    free_list_queue(&list_queue);
 }
 
 static void fill_arr(request_t arr[], int len)
@@ -121,13 +121,13 @@ static void fill_arr(request_t arr[], int len)
     for (int i = 0; i < len; i++)
     {
         arr[i].id = rand() % 100;
-        arr[i].processing_time = 0.0;
+        arr[i].entered_time = 0.0;
     }
 }
 
 void print_measurements(void)
 {
-    int seq_lenghts[] = { 1, 10, 50, 100, 130, 500 };
+    int seq_lenghts[] = { 1, 10, 50, 100, 335, 500 };
 
     print_table_header();
     for (size_t i = 0; i < 6; i++)

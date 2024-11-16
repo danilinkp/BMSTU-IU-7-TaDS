@@ -103,7 +103,7 @@ void print_free_area(list_queue_t *queue)
         printf("Освобожденная область памяти: %p\n", current->address);
 }
 
-void free_queue(list_queue_t *queue)
+void free_list_queue(list_queue_t *queue)
 {
     node_t *next;
     for (; queue->head; queue->head = next)
@@ -118,4 +118,49 @@ void free_queue(list_queue_t *queue)
         next_free = queue->free_list->next;
         free(queue->free_list);
     }
+}
+
+void test_memory_fragmentation(int initial_fill, int remove_count, int additional_fill)
+{
+    list_queue_t queue;
+    list_queue_init(&queue, initial_fill + additional_fill);
+
+    // Шаг 1: Заполняем очередь начальными элементами
+    for (int i = 0; i < initial_fill; i++)
+    {
+        request_t req;
+        req.id = i;
+        list_enqueue(&queue, req);
+    }
+
+    printf("Очередь после начального заполнения:\n");
+    print_list_queue(&queue);
+    printf("\n");
+
+    request_t removed;
+    for (int i = 0; i < remove_count; i++)
+    {
+        list_dequeue(&queue, &removed);
+    }
+
+    printf("Очередь после удаления %d элементов:\n", remove_count);
+    print_list_queue(&queue);
+    printf("Список освобожденных областей после удаления:\n");
+    print_free_area(&queue);
+    printf("\n");
+
+    for (int i = initial_fill; i < initial_fill + additional_fill; i++)
+    {
+        request_t req;
+        req.id = i;
+        list_enqueue(&queue, req);
+    }
+
+    printf("Очередь после добавления %d новых элементов:\n", additional_fill);
+    print_list_queue(&queue);
+    printf("Список освобожденных областей после добавления:\n");
+    print_free_area(&queue);
+    printf("\n");
+
+    free_list_queue(&queue);
 }

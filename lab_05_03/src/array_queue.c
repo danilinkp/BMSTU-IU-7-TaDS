@@ -17,7 +17,7 @@ int is_arr_queue_empty(arr_queue_t *queue)
 
 int is_arr_queue_full(arr_queue_t *queue)
 {
-    return (queue->head == (queue->tail + 1) % queue->max_size);
+    return queue->size == queue->max_size;
 }
 
 void arr_enqueue(arr_queue_t *queue, request_t elem)

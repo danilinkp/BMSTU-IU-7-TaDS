@@ -80,6 +80,6 @@ void queue_print_free_area(queue_t *queue)
 void queue_free(queue_t *queue)
 {
     if (queue->type == LIST_QUEUE)
-        free_queue(&(queue->list_queue));
+        free_list_queue(&(queue->list_queue));
 }
 

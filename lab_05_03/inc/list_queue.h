@@ -28,20 +28,30 @@ typedef struct
     int free_elems_size; // Кол-во освобожденных элементов
 } list_queue_t;
 
+// Инициализация очереди
 void list_queue_init(list_queue_t *queue, int max_size);
 
+// Проверка очереди на пустоту
 int is_list_queue_empty(list_queue_t *queue);
 
+// Проверка очереди на переполненность
 int is_list_queue_full(list_queue_t *queue);
 
+// Добавление элемента в очередь
 int list_enqueue(list_queue_t *queue, request_t elem);
 
+// Удаление элемента из очереди
 int list_dequeue(list_queue_t *queue, request_t *removed_elem);
 
+// Вывод элементов очереди на экран
 void print_list_queue(list_queue_t *queue);
 
-void free_queue(list_queue_t *queue);
+// Очищение очереди
+void free_list_queue(list_queue_t *queue);
 
+// Вывод освобжденной области
 void print_free_area(list_queue_t *queue);
+
+void test_memory_fragmentation(int initial_fill, int remove_count, int additional_fill);
 
 #endif //LAB_05_03_LIST_QUEUE_H

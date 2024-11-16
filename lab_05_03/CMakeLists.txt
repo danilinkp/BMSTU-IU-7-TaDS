@@ -14,6 +14,7 @@ set(SOURCES src/main.c
         src/queue.c
         src/queue_simulation.c
         src/menu.c
-        src/timer.c)
+        src/timer.c
+        src/input_tools.c)
 
 add_executable(app ${SOURCES})

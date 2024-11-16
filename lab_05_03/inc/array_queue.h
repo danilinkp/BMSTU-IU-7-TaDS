@@ -3,7 +3,7 @@
 
 #include "request.h"
 
-#define MAX_ARR_SIZE 1000
+#define MAX_ARR_SIZE 500
 
 typedef struct
 {
