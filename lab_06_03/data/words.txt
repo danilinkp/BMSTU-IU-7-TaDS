@@ -1,0 +1,6 @@
+Table
+Computer
+Automobile
+Banana
+Toilet
+Autobus
