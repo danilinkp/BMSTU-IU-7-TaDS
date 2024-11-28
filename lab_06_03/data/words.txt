@@ -2,5 +2,5 @@ Table
 Computer
 Automobile
 Banana
-Toilet
+Tort
 Autobus

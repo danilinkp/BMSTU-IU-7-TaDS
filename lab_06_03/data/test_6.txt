@@ -1,0 +1,17 @@
+mango
+apple
+strawberry
+almond
+banana
+raspberry
+watermelon
+acorn
+blackberry
+orange
+peach
+tomato
+walnut
+apricot
+grape
+kiwi
+lemon

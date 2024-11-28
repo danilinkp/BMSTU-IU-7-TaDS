@@ -1,6 +1,7 @@
 #include "tree.h"
 #include "input_tools.h"
 #include "menu.h"
+#include "efficiency_performance.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -135,7 +136,7 @@ int main(void)
                 break;
 
             case PRINT_MEASUREMENTS:
-
+                print_measurements();
                 break;
             default:
                 printf("Выберите 1 из пунктов меню.\n");
