@@ -13,7 +13,7 @@ void remove_lines_by_letter(FILE *file, char letter)
 
     fseek(file, 0, SEEK_END);
     long file_size = ftell(file);
-    rewind(file);
+    fseek(file, 0, SEEK_SET);
 
     unsigned char *buffer = (unsigned char *) malloc(file_size);
     fread(buffer, 1, file_size, file);
@@ -39,7 +39,6 @@ void remove_lines_by_letter(FILE *file, char letter)
         current_pos++;
     }
 
-    // Обрезаем файл до новой длины
     ftruncate(fileno(file), write_pos);
 
     free(buffer);
@@ -66,50 +65,32 @@ int count_nodes(tree_node_t *root)
     return 1 + count_nodes(root->left) + count_nodes(root->right);
 }
 
-// Функция для симметричного обхода дерева и возврата значения по индексу
 char *in_order_traversal(tree_node_t *node, int *current_index, int random_index)
 {
     if (node == NULL)
-    {
         return NULL;
-    }
 
-    // Идем в левое поддерево
     char *left_result = in_order_traversal(node->left, current_index, random_index);
     if (left_result != NULL)
-    {
         return left_result;
-    }
 
-    // Если это нужный элемент
     (*current_index)++;
     if (*current_index == random_index)
-    {
         return node->str;
-    }
 
-    // Идем в правое поддерево
     return in_order_traversal(node->right, current_index, random_index);
 }
 
-// Функция для случайного выбора узла из дерева
 char *get_random(tree_node_t *root)
 {
-    // Подсчитываем количество узлов
     int total_nodes = count_nodes(root);
 
     if (total_nodes == 0)
-    {
-        return NULL;  // Если дерево пустое
-    }
+        return NULL;
 
-    // Генерируем случайный индекс от 1 до total_nodes
     int random_index = rand() % total_nodes + 1;
-
-    // Переменная для текущего индекса в обходе дерева
     int current_index = 0;
 
-    // Выполняем симметричный обход дерева
     return in_order_traversal(root, &current_index, random_index);
 }
 

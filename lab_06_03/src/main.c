@@ -77,7 +77,27 @@ int main(void)
                 root = tree_node_insert(root, new_node);
                 printf("Элемент успешно добавлен.\n");
                 break;
-
+            case BST_SEARCH:
+                if (!root)
+                {
+                    printf("Дерево пусто, искать нечего.\n");
+                    break;
+                }
+                printf("Введите элемент который хотите найти (регистр влияет): ");
+                rc = read_str(stdin, word, MAX_STR_LEN);
+                if (rc != EXIT_SUCCESS)
+                {
+                    printf("Ошибка ввода элемента.\n");
+                    break;
+                }
+                tree_node_t *searched_node = tree_node_search(root, word);
+                if (!searched_node)
+                {
+                    printf("Такой вершины нет.\n");
+                    break;
+                }
+                printf("Вершина найдена.\n");
+                break;
             case BST_REMOVE:
                 if (!root)
                 {

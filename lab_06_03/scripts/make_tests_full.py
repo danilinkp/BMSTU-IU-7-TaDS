@@ -3,16 +3,11 @@ import random
 import nltk
 from nltk.corpus import words
 
-# Убедимся, что словарь загружен
 nltk.download('words')
 word_list = words.words()
 
 
 def create_balanced_order(words):
-    """
-    Рекурсивно создает сбалансированное дерево из списка слов.
-    Слова должны быть отсортированы.
-    """
     if not words:
         return []
     mid = len(words) // 2
@@ -20,10 +15,6 @@ def create_balanced_order(words):
 
 
 def generate_words_for_tree(num_nodes):
-    """
-    Генерирует список осмысленных слов для построения полного бинарного дерева заданной высоты.
-    Количество слов соответствует числу узлов в полном бинарном дереве.
-    """
     if num_nodes < 1:
         raise ValueError("Высота дерева должна быть больше 0.")
 
@@ -33,34 +24,27 @@ def generate_words_for_tree(num_nodes):
 
 
 def save_words_to_file(height, words):
-    """
-    Сохраняет список слов в текстовый файл в папке data.
-    Название файла формируется автоматически: test_{height}.txt.
-    """
-    # Создаем папку data, если её нет
-    directory = "../data"  # Папка будет создаваться в текущей директории
+    directory = "../data"
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    # Формируем имя файла
     filename = os.path.join(directory, f"b_test_{height}.txt")
 
-    # Сохраняем слова в файл
     with open(filename, 'w') as f:
         for word in words:
-            f.write(word + '\n')
+            f.write(word.lower() + '\n')
 
     print(f"Файл '{filename}' создан. Слова сохранены.")
 
 
 def main():
     try:
-        num_nodes = [10, 20, 50, 75, 100]
-        for num_node in num_nodes:
-            words = generate_words_for_tree(num_node)
-            sorted_words = sorted(words)  # Сортируем слова для сбалансированного дерева
-            balanced_words = create_balanced_order(sorted_words)  # Создаем сбалансированный порядок
-            save_words_to_file(num_node, balanced_words)
+        num_nodes = int(input("Введите кол-во вершин: "))
+
+        words = generate_words_for_tree(num_nodes)
+        sorted_words = sorted(words)
+        balanced_words = create_balanced_order(sorted_words)
+        save_words_to_file(num_nodes, balanced_words)
     except ValueError as e:
         print(f"Ошибка: {e}")
     except Exception as e:

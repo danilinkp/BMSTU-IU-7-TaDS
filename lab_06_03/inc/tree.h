@@ -7,10 +7,10 @@
 
 typedef struct tree_node
 {
-    char *str;
-    struct tree_node *parent;
-    struct tree_node *left;
-    struct tree_node *right;
+    char *str; //Данные
+    struct tree_node *parent; // Указатель на ролителя
+    struct tree_node *left; // Указатель на левого потомка
+    struct tree_node *right; // Указатель на правого потомка
 } tree_node_t;
 
 typedef enum
@@ -21,13 +21,6 @@ typedef enum
     FILE_READ_ERROR,
     FILE_OPEN_ERROR,
 } tree_errors_t;
-
-typedef enum
-{
-    PREORDER = 1,
-    INORDER,
-    POSTORDER
-} order_t;
 
 // Очищение памяти, ввыделенной под дерево
 void free_tree(tree_node_t *tree_node);
@@ -52,6 +45,5 @@ tree_node_t *tree_remove_by_first_letter(tree_node_t *root, char letter, size_t 
 
 // Вывод дерева на экран
 int open_dot_img(const char *file_name, tree_node_t *root);
-
 
 #endif //LAB_06_03_TREE_H

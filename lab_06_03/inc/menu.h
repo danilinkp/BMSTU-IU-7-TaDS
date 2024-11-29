@@ -8,6 +8,7 @@ typedef enum
     BST_READ,
     BST_INSERT,
     BST_REMOVE,
+    BST_SEARCH,
     BST_REMOVE_BY_LETTER,
     BST_PRINT,
     PRINT_MEASUREMENTS
