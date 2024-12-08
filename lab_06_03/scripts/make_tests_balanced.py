@@ -1,11 +1,8 @@
 import os
 import random
-import nltk
-from nltk.corpus import words
+from faker import Faker
 
-nltk.download('words')
-word_list = words.words()
-
+fake = Faker('en_US')
 
 def create_balanced_order(words):
     if not words:
@@ -18,9 +15,10 @@ def generate_words_for_tree(num_nodes):
     if num_nodes < 1:
         raise ValueError("Высота дерева должна быть больше 0.")
 
-    if num_nodes > len(word_list):
-        raise ValueError("В словаре недостаточно слов для создания дерева этой высоты.")
-    return random.sample(word_list, num_nodes)
+    words = set()
+    while len(words) < num_nodes:
+        words.add(fake.word().lower())
+    return list(words)
 
 
 def save_words_to_file(height, words):
@@ -28,11 +26,11 @@ def save_words_to_file(height, words):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    filename = os.path.join(directory, f"b_test_{height}.txt")
+    filename = os.path.join(directory, f"words_test_{height}.txt")
 
     with open(filename, 'w') as f:
         for word in words:
-            f.write(word.lower() + '\n')
+            f.write(word + '\n')
 
     print(f"Файл '{filename}' создан. Слова сохранены.")
 
