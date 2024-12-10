@@ -6,18 +6,51 @@
 #include <math.h>
 
 #define PRIME_NUM 151
-#define START_HT_SIZE 57
+#define START_HT_SIZE 13
+#define MAX_COLLISIONS 3
+#define MAX_LOAD_FACTOR 70
 
-/*
- * Заметка:
- * Реструктуризировать таблицу автоматически
- * изменять размер до следующего простого числа
- * Сделать функцию подсчёта среднего кол-ва колизий
- * спорный момент когда реструктуризовывать (когда коллизий больше 3-4) или среднее кол-во сравнений больше 3-4
- * этот момент буду решать или этим или тем (комбинированный подход)
- */
+static int is_prime(int x)
+{
+    if (x < 2)
+        return -1;
+    if (x < 4)
+        return 1;
+    if ((x % 2) == 0)
+        return 0;
+    for (int i = 3; i <= floor(sqrt((double) x)); i += 2)
+        if ((x % i) == 0)
+            return 0;
+    return 1;
+}
 
-typedef size_t (*hash_t)(char *, int);
+static int next_prime(int x)
+{
+    while (!is_prime(x))
+        x++;
+    return x;
+}
+
+static key_node_t *list_push_back(key_node_t *head, key_node_t *new_item)
+{
+    if (!head)
+        return new_item;
+
+    key_node_t *curr = head;
+    for (; curr->next; curr = curr->next);
+    curr->next = new_item;
+    new_item->next = NULL;
+    return head;
+}
+
+static size_t list_len(key_node_t *item)
+{
+    size_t len = 0;
+    for (key_node_t *curr = item; curr; curr = curr->next)
+        len++;
+
+    return len;
+}
 
 size_t polynom_hash(char *str, int ht_size)
 {
@@ -41,30 +74,14 @@ size_t simple_hash(char *str, int ht_size)
     return hash % ht_size;
 }
 
-key_node_t *list_push_back(key_node_t *head, key_node_t *new_item)
-{
-    if (!head)
-        return new_item;
-
-    key_node_t *curr = head;
-    for (; curr->next; curr = curr->next);
-    curr->next = new_item;
-    new_item->next = NULL;
-    return head;
-}
-
-void free_key_node(key_node_t *key_node)
+static void free_key_node(key_node_t *key_node)
 {
     if (key_node->key)
-    {
         free(key_node->key);
-        key_node->key = NULL;
-    }
     free(key_node);
-    key_node = NULL;
 }
 
-void free_open_ht_item(key_node_t *item)
+static void free_open_ht_item(key_node_t *item)
 {
     key_node_t *next;
     for (; item; item = next)
@@ -79,10 +96,14 @@ void clear_open_ht_data(open_hash_table_t *hash_table)
     for (size_t i = 0; i < (size_t) hash_table->size; i++)
         if (hash_table->keys[i])
             free_open_ht_item(hash_table->keys[i]);
+
+    free(hash_table->keys);
+    hash_table->keys = NULL;
     hash_table->size = 0;
+    hash_table->count = 0;
 }
 
-key_node_t *create_open_ht_item(char *str)
+static key_node_t *create_open_ht_item(char *str)
 {
     key_node_t *new_key = calloc(1, sizeof(key_node_t));
     if (!new_key)
@@ -101,46 +122,45 @@ key_node_t *create_open_ht_item(char *str)
 
 int create_open_ht(open_hash_table_t *hash_table)
 {
-    hash_table->keys = calloc(MAX_ARR_LEN, sizeof(key_node_t *));
+    hash_table->keys = calloc(START_HT_SIZE, sizeof(key_node_t *));
     if (!hash_table->keys)
-        return OPEN_HT_DATA_ALLOC_ERROR;
+        return HT_DATA_ALLOC_ERROR;
     hash_table->size = START_HT_SIZE;
     hash_table->count = 0;
     return EXIT_SUCCESS;
 }
 
-void insert_open_ht(open_hash_table_t *hash_table, char *str, hash_t hash)
+void insert_open_ht(open_hash_table_t *hash_table, char *str)
 {
     key_node_t *new_item = create_open_ht_item(str);
 
-    size_t index = hash(str, hash_table->size);
+    size_t index = simple_hash(str, hash_table->size);
+
+    if (list_len(hash_table->keys[index]) > MAX_COLLISIONS)
+        restruct_open_ht(hash_table);
+
     hash_table->keys[index] = list_push_back(hash_table->keys[index], new_item);
 
     hash_table->count++;
 }
 
-char *search_open_ht(open_hash_table_t *hash_table, char *str, hash_t hash)
+char *search_open_ht(open_hash_table_t *hash_table, char *str)
 {
-    hash_table->compares++;
-
-    size_t index = hash(str, hash_table->size);
+    size_t index = simple_hash(str, hash_table->size);
 
     if (hash_table->keys[index] == NULL)
         return NULL;
 
     for (key_node_t *curr_key = hash_table->keys[index]; curr_key; curr_key = curr_key->next)
-    {
-        hash_table->compares++;
         if (strcmp(str, curr_key->key) == 0)
             return curr_key->key;
-    }
 
     return NULL;
 }
 
-void delete_open_ht(open_hash_table_t *hash_table, char *str, hash_t hash)
+void delete_open_ht(open_hash_table_t *hash_table, char *str)
 {
-    size_t index = hash(str, hash_table->size);
+    size_t index = simple_hash(str, hash_table->size);
 
     key_node_t *curr_key = hash_table->keys[index];
     key_node_t *prev = NULL;
@@ -159,13 +179,30 @@ void delete_open_ht(open_hash_table_t *hash_table, char *str, hash_t hash)
     }
 }
 
+void del_by_first_letter_open_ht(open_hash_table_t *hash_table, char letter)
+{
+    for (size_t i = 0; i < (size_t) hash_table->size; i++)
+    {
+        key_node_t *current = hash_table->keys[i];
+        while (current)
+        {
+            key_node_t *next = current->next;
+
+            if (current->key[0] == letter)
+                delete_open_ht(hash_table, current->key);
+
+            current = next;
+        }
+    }
+}
+
 int fread_open_ht(FILE *file, open_hash_table_t *hash_table)
 {
     size_t len = 0;
     char tmp_str[MAX_WORD_LEN + 1];
     while (read_str(file, tmp_str, MAX_WORD_LEN) == EXIT_SUCCESS)
     {
-        insert_open_ht(hash_table, tmp_str, simple_hash);
+        insert_open_ht(hash_table, tmp_str);
         len++;
     }
     if (!len)
@@ -198,7 +235,202 @@ void print_open_ht(open_hash_table_t *hash_table)
     }
 }
 
-void restruct_open_ht(open_hash_table_t *hash_table)
+int restruct_open_ht(open_hash_table_t *hash_table)
 {
+    key_node_t **old_keys = hash_table->keys;
+    size_t old_size = hash_table->size;
+    size_t new_size = next_prime((int) hash_table->size);
 
+    hash_table->keys = calloc(new_size, sizeof(key_node_t *));
+    if (!hash_table->keys)
+    {
+        hash_table->keys = old_keys;
+        return HT_DATA_ALLOC_ERROR;
+    }
+    hash_table->size = (int) new_size;
+    hash_table->count = 0;
+
+    for (size_t i = 0; i < old_size; i++)
+    {
+        key_node_t *curr = old_keys[i];
+        for (; curr; curr = curr->next)
+            insert_open_ht(hash_table, curr->key);
+    }
+
+    free(old_keys);
+    return EXIT_SUCCESS;
+}
+
+void clear_closed_ht_data(closed_hash_table_t *hash_table)
+{
+    free(hash_table->keys);
+    hash_table->keys = NULL;
+    hash_table->size = 0;
+    hash_table->count = 0;
+}
+
+int create_closed_ht(closed_hash_table_t *hash_table)
+{
+    hash_table->keys = calloc(START_HT_SIZE, sizeof(ht_key_t));
+    if (!hash_table->keys)
+        return HT_DATA_ALLOC_ERROR;
+    hash_table->size = START_HT_SIZE;
+    hash_table->count = 0;
+    return EXIT_SUCCESS;
+}
+
+static size_t get_index(size_t hash, size_t attempt, int size)
+{
+    return (hash + attempt) % size;
+}
+
+void insert_closed_ht(closed_hash_table_t *hash_table, char *str)
+{
+    const int load = hash_table->count * 100 / hash_table->size;
+    if (load > MAX_LOAD_FACTOR)
+        restruct_closed_ht(hash_table);
+
+    size_t index = simple_hash(str, hash_table->size);
+    ht_key_t curr_key = hash_table->keys[index];
+    size_t i = 1;
+
+    int compares = 0;
+    while (curr_key)
+    {
+        index = get_index(index, i, hash_table->size);
+        curr_key = hash_table->keys[index];
+        i++;
+        compares++;
+        if (compares > MAX_COLLISIONS)
+        {
+            restruct_closed_ht(hash_table);
+            insert_closed_ht(hash_table, str);
+            return;
+        }
+    }
+
+    strcpy(hash_table->keys[index], str);
+    hash_table->count++;
+}
+
+char *search_closed_ht(closed_hash_table_t *hash_table, char *str)
+{
+    size_t index = simple_hash(str, hash_table->size);
+
+    ht_key_t key = hash_table->keys[index];
+
+    if (key == NULL)
+        return NULL;
+
+    size_t i = 1;
+    int compares = 0;
+
+    while (hash_table->keys[index])
+    {
+        if (strcmp(hash_table->keys[index], str) == 0)
+            return hash_table->keys[index];
+
+        if (compares > MAX_COLLISIONS)
+            return NULL;
+
+        index = get_index(index, i, hash_table->size);
+        i++;
+        compares++;
+    }
+
+    return NULL;
+}
+
+void delete_closed_ht(closed_hash_table_t *hash_table, char *str)
+{
+    size_t index = simple_hash(str, hash_table->size);
+
+    size_t i = 1;
+    int compares = 0;
+
+    while (hash_table->keys[index])
+    {
+        if (strcmp(hash_table->keys[index], str) == 0)
+        {
+            hash_table->keys[index] = NULL;
+            hash_table->count--;
+            return;
+        }
+        if (compares > MAX_COLLISIONS)
+            return;
+
+        index = get_index(index, i, hash_table->size);
+        i++;
+        compares++;
+    }
+}
+
+void del_by_first_letter_closed_ht(closed_hash_table_t *hash_table, char letter)
+{
+    for (size_t i = 0; i < (size_t) hash_table->size; i++)
+    {
+        ht_key_t key = hash_table->keys[i];
+        if (key[0] == letter)
+            delete_closed_ht(hash_table, key);
+    }
+}
+
+int fread_closed_ht(FILE *file, closed_hash_table_t *hash_table)
+{
+    size_t len = 0;
+    char tmp_str[MAX_WORD_LEN + 1];
+    while (read_str(file, tmp_str, MAX_WORD_LEN) == EXIT_SUCCESS)
+    {
+        insert_closed_ht(hash_table, tmp_str);
+        len++;
+    }
+    if (!len)
+        return FILE_EMPTY_ERROR;
+
+    if (!feof(file))
+        return FILE_READ_ERROR;
+
+    return EXIT_SUCCESS;
+}
+
+void print_closed_ht(closed_hash_table_t *hash_table)
+{
+    printf("Hash Table:\n");
+    for (size_t i = 0; i < (size_t) hash_table->size; i++)
+    {
+        printf("Index %zu: ", i);
+        ht_key_t key = hash_table->keys[i];
+        if (!key)
+        {
+            printf("NULL\n");
+            continue;
+        }
+        printf("%s\n", key);
+    }
+}
+
+int restruct_closed_ht(closed_hash_table_t *hash_table)
+{
+    ht_key_t *old_keys = hash_table->keys;
+    size_t old_size = hash_table->size;
+    size_t new_size = next_prime((int) hash_table->size);
+
+    hash_table->keys = calloc(new_size, sizeof(ht_key_t));
+    if (!hash_table->keys)
+    {
+        hash_table->keys = old_keys;
+        return HT_DATA_ALLOC_ERROR;
+    }
+    hash_table->size = (int) new_size;
+    hash_table->count = 0;
+
+    for (size_t i = 0; i < old_size; i++)
+    {
+        ht_key_t curr = old_keys[i];
+        if (curr)
+            insert_closed_ht(hash_table, curr);
+    }
+
+    free(old_keys);
+    return EXIT_SUCCESS;
 }
