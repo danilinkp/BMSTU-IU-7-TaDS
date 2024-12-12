@@ -45,7 +45,9 @@ void free_tree(tree_node_t *tree_node)
 
 static unsigned char height(tree_node_t *node)
 {
-    return node ? node->height : 0;
+    if (!node)
+        return 0;
+    return node->height;
 }
 
 static int balance_factor(tree_node_t *node)
@@ -63,7 +65,6 @@ static void update_height(tree_node_t *node)
     unsigned char right_height = height(node->right);
     node->height = (left_height > right_height ? left_height : right_height) + 1;
 }
-
 
 static tree_node_t *rotate_left(tree_node_t *node)
 {
@@ -100,7 +101,6 @@ static tree_node_t *balance(tree_node_t *root)
     update_height(root);
 
     int balance = balance_factor(root);
-
     if (balance > 1)
     {
         if (balance_factor(root->left) < 0)
@@ -187,8 +187,29 @@ tree_node_t *tree_node_search(tree_node_t *root, const char *str)
         else
             curr = curr->left;
     }
-
     return NULL;
+}
+
+int tree_node_search_cmps(tree_node_t *root, const char *str)
+{
+    tree_node_t *curr = root;
+    int cmps = 0;
+    while (curr)
+    {
+        if (strcmp(curr->str, str) == 0)
+            return ++cmps;
+        else if (strcmp(curr->str, str) < 0)
+        {
+            curr = curr->right;
+            cmps++;
+        }
+        else
+        {
+            curr = curr->left;
+            cmps++;
+        }
+    }
+    return cmps;
 }
 
 static tree_node_t *next(tree_node_t *removed_node)
@@ -201,103 +222,56 @@ static tree_node_t *next(tree_node_t *removed_node)
 
 tree_node_t *tree_node_remove(tree_node_t *root, tree_node_t *removed_node, int is_avl)
 {
-    tree_node_t *parent = removed_node->parent;
-    tree_node_t *balance_start = parent;
+    if (!root)
+        return NULL;
 
-    // Удаляемая вершина - лист
-    if (!removed_node->left && !removed_node->right)
+    if (removed_node != root)
     {
-        if (!parent)
+        if (strcmp(removed_node->str, root->str) < 0)
         {
-            free_node(removed_node);
-            return NULL;
+            root->left = tree_node_remove(root->left, removed_node, is_avl);
+            if (root->left)
+                root->left->parent = root;
         }
-        else
+        else if (strcmp(removed_node->str, root->str) > 0)
         {
-            if (parent->left == removed_node)
-                parent->left = removed_node->left;
-            else if (parent->right == removed_node)
-                parent->right = NULL;
-            if (removed_node == root)
-                root = NULL;
-            free_node(removed_node);
+            root->right = tree_node_remove(root->right, removed_node, is_avl);
+            if (root->right)
+                root->right->parent = root;
         }
     }
-
-    // Удаляемая вершина имеет одного потомока
-    else if (!removed_node->left || !removed_node->right)
-    {
-        if (!parent)
-        {
-            if (!removed_node->right)
-            {
-                root = removed_node->left;
-                root->parent = NULL;
-            }
-            else
-            {
-                root = removed_node->right;
-                removed_node->parent = NULL;
-            }
-        }
-        else
-        {
-            if (!removed_node->right)
-            {
-                if (parent->right == removed_node)
-                    parent->right = removed_node->left;
-                else if (parent->left == removed_node)
-                    parent->left = removed_node->left;
-                removed_node->left->parent = parent;
-                if (root == removed_node)
-                    root = removed_node->left;
-            }
-            else
-            {
-                if (parent->right == removed_node)
-                    parent->right = removed_node->right;
-                else if (parent->left == removed_node)
-                    parent->left = removed_node->right;
-                removed_node->right->parent = parent;
-                if (root == removed_node)
-                    root = removed_node->right;
-            }
-        }
-        free_node(removed_node);
-    }
-
-    // Удаляемая вершина имеет два потомка
     else
     {
-        tree_node_t *successor = next(removed_node);
-        strcpy(removed_node->str, successor->str);
-        if (successor->parent == removed_node)
+        // Лист или вершина с одним потомком
+        if (!root->left)
         {
-            successor->parent->right = successor->right;
-            if (successor->right)
-                successor->right->parent = successor->parent;
+            tree_node_t *temp = root->right;
+            free_node(root);
+            return temp;
         }
+        else if (!root->right)
+        {
+            tree_node_t *temp = root->left;
+            free_node(root);
+            return temp;
+        }
+        // Вершина с двумя потомками
         else
         {
-            successor->parent->left = successor->right;
-            if (successor->right)
-                successor->right->parent = successor->parent;
+            tree_node_t *successor = next(root);
+            strcpy(root->str, successor->str);
+            root->right = tree_node_remove(root->right, successor, is_avl);
+            if (root->right)
+                root->right->parent = root;
         }
-        free_node(successor);
     }
 
     if (is_avl)
     {
-        tree_node_t *current = balance_start;
-        while (current)
-        {
-            update_height(current);
-            current = balance(current);
-            if (!current->parent)
-                root = current;
-            current = current->parent;
-        }
+        update_height(root);
+        root = balance(root);
     }
+
     return root;
 }
 
@@ -314,6 +288,7 @@ tree_node_t *tree_remove_by_first_letter(tree_node_t *root, char letter, size_t 
         root = tree_node_remove(root, root, is_avl);
         (*removed_elems)++;
     }
+
     return root;
 }
 

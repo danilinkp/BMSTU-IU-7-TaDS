@@ -26,6 +26,7 @@ static int is_prime(int x)
 
 static int next_prime(int x)
 {
+    x++;
     while (!is_prime(x))
         x++;
     return x;
@@ -69,7 +70,7 @@ size_t simple_hash(char *str, int ht_size)
     size_t hash = 0;
     size_t len_s = strlen(str);
     for (size_t i = 0; i < len_s; i++)
-        hash += str[i];
+        hash += (size_t) str[i];
 
     return hash % ht_size;
 }
@@ -93,14 +94,17 @@ static void free_open_ht_item(key_node_t *item)
 
 void clear_open_ht_data(open_hash_table_t *hash_table)
 {
-    for (size_t i = 0; i < (size_t) hash_table->size; i++)
-        if (hash_table->keys[i])
-            free_open_ht_item(hash_table->keys[i]);
+    if (hash_table->keys)
+    {
+        for (size_t i = 0; i < (size_t) hash_table->size; i++)
+            if (hash_table->keys[i])
+                free_open_ht_item(hash_table->keys[i]);
 
-    free(hash_table->keys);
-    hash_table->keys = NULL;
-    hash_table->size = 0;
-    hash_table->count = 0;
+        free(hash_table->keys);
+        hash_table->keys = NULL;
+        hash_table->size = 0;
+        hash_table->count = 0;
+    }
 }
 
 static key_node_t *create_open_ht_item(char *str)
@@ -136,7 +140,7 @@ void insert_open_ht(open_hash_table_t *hash_table, char *str)
 
     size_t index = simple_hash(str, hash_table->size);
 
-    if (list_len(hash_table->keys[index]) > MAX_COLLISIONS)
+    if (list_len(hash_table->keys[index]) >= MAX_COLLISIONS)
         restruct_open_ht(hash_table);
 
     hash_table->keys[index] = list_push_back(hash_table->keys[index], new_item);
@@ -156,6 +160,23 @@ char *search_open_ht(open_hash_table_t *hash_table, char *str)
             return curr_key->key;
 
     return NULL;
+}
+
+int cmps_search_open_ht(open_hash_table_t *hash_table, char *str)
+{
+    size_t index = simple_hash(str, hash_table->size);
+    int cmps = 0;
+    if (hash_table->keys[index] == 0)
+        return 0;
+
+    for (key_node_t *curr_key = hash_table->keys[index]; curr_key; curr_key = curr_key->next)
+    {
+        cmps++;
+        if (strcmp(str, curr_key->key) == 0)
+            return cmps;
+    }
+
+    return cmps;
 }
 
 void delete_open_ht(open_hash_table_t *hash_table, char *str)
@@ -198,6 +219,7 @@ void del_by_first_letter_open_ht(open_hash_table_t *hash_table, char letter)
 
 int fread_open_ht(FILE *file, open_hash_table_t *hash_table)
 {
+    rewind(file);
     size_t len = 0;
     char tmp_str[MAX_WORD_LEN + 1];
     while (read_str(file, tmp_str, MAX_WORD_LEN) == EXIT_SUCCESS)
@@ -206,17 +228,17 @@ int fread_open_ht(FILE *file, open_hash_table_t *hash_table)
         len++;
     }
     if (!len)
-        return FILE_EMPTY_ERROR;
+        return HT_FILE_EMPTY_ERROR;
 
     if (!feof(file))
-        return FILE_READ_ERROR;
+        return HT_FILE_READ_ERROR;
 
     return EXIT_SUCCESS;
 }
 
 void print_open_ht(open_hash_table_t *hash_table)
 {
-    printf("Hash Table:\n");
+    printf("Open Hash Table:\n");
     for (size_t i = 0; i < (size_t) hash_table->size; i++)
     {
         printf("Index %zu: ", i);
@@ -263,6 +285,13 @@ int restruct_open_ht(open_hash_table_t *hash_table)
 
 void clear_closed_ht_data(closed_hash_table_t *hash_table)
 {
+    if (!hash_table->keys)
+        return;
+
+    for (size_t i = 0; i < (size_t) hash_table->size; i++)
+        if (hash_table->keys[i])
+            free(hash_table->keys[i]);
+
     free(hash_table->keys);
     hash_table->keys = NULL;
     hash_table->size = 0;
@@ -279,11 +308,6 @@ int create_closed_ht(closed_hash_table_t *hash_table)
     return EXIT_SUCCESS;
 }
 
-static size_t get_index(size_t hash, size_t attempt, int size)
-{
-    return (hash + attempt) % size;
-}
-
 void insert_closed_ht(closed_hash_table_t *hash_table, char *str)
 {
     const int load = hash_table->count * 100 / hash_table->size;
@@ -291,26 +315,20 @@ void insert_closed_ht(closed_hash_table_t *hash_table, char *str)
         restruct_closed_ht(hash_table);
 
     size_t index = simple_hash(str, hash_table->size);
-    ht_key_t curr_key = hash_table->keys[index];
-    size_t i = 1;
 
-    int compares = 0;
-    while (curr_key)
+    for (int i = 0; i < hash_table->size; ++i)
     {
-        index = get_index(index, i, hash_table->size);
-        curr_key = hash_table->keys[index];
-        i++;
-        compares++;
-        if (compares > MAX_COLLISIONS)
+        size_t curr_index = (index + i * i) % hash_table->size;
+        if (hash_table->keys[curr_index] == NULL)
         {
-            restruct_closed_ht(hash_table);
-            insert_closed_ht(hash_table, str);
+            hash_table->keys[curr_index] = strdup(str);
+            hash_table->count++;
             return;
         }
     }
 
-    strcpy(hash_table->keys[index], str);
-    hash_table->count++;
+    restruct_closed_ht(hash_table);
+    insert_closed_ht(hash_table, str);
 }
 
 char *search_closed_ht(closed_hash_table_t *hash_table, char *str)
@@ -322,46 +340,51 @@ char *search_closed_ht(closed_hash_table_t *hash_table, char *str)
     if (key == NULL)
         return NULL;
 
-    size_t i = 1;
-    int compares = 0;
-
-    while (hash_table->keys[index])
+    for (int i = 0; i < hash_table->size; ++i)
     {
-        if (strcmp(hash_table->keys[index], str) == 0)
-            return hash_table->keys[index];
-
-        if (compares > MAX_COLLISIONS)
-            return NULL;
-
-        index = get_index(index, i, hash_table->size);
-        i++;
-        compares++;
+        size_t curr_index = (index + i * i) % hash_table->size;
+        if (strcmp(hash_table->keys[curr_index], str) == 0)
+            return hash_table->keys[curr_index];
     }
 
     return NULL;
 }
 
-void delete_closed_ht(closed_hash_table_t *hash_table, char *str)
+int cmps_search_closed_ht(closed_hash_table_t *hash_table, char *str)
 {
     size_t index = simple_hash(str, hash_table->size);
 
-    size_t i = 1;
+    ht_key_t key = hash_table->keys[index];
+
+    if (key == NULL)
+        return 0;
+
     int compares = 0;
-
-    while (hash_table->keys[index])
+    for (int i = 0; i < hash_table->size; ++i)
     {
-        if (strcmp(hash_table->keys[index], str) == 0)
-        {
-            hash_table->keys[index] = NULL;
-            hash_table->count--;
-            return;
-        }
-        if (compares > MAX_COLLISIONS)
-            return;
-
-        index = get_index(index, i, hash_table->size);
-        i++;
         compares++;
+        size_t curr_index = (index + i * i) % hash_table->size;
+        if (strcmp(hash_table->keys[curr_index], str) == 0)
+            return compares;
+    }
+
+    return compares;
+}
+
+void delete_closed_ht(closed_hash_table_t *hash_table, char *str)
+{
+    size_t index = simple_hash(str, hash_table->size);
+    for (int i = 0; i < hash_table->size; ++i)
+    {
+        size_t curr_index = (index + i * i) % hash_table->size;
+        if (hash_table->keys[curr_index])
+            if (strcmp(hash_table->keys[curr_index], str) == 0)
+            {
+                free(hash_table->keys[curr_index]);
+                hash_table->keys[curr_index] = NULL;
+                hash_table->count--;
+                return;
+            }
     }
 }
 
@@ -370,13 +393,14 @@ void del_by_first_letter_closed_ht(closed_hash_table_t *hash_table, char letter)
     for (size_t i = 0; i < (size_t) hash_table->size; i++)
     {
         ht_key_t key = hash_table->keys[i];
-        if (key[0] == letter)
+        if (key && key[0] == letter)
             delete_closed_ht(hash_table, key);
     }
 }
 
 int fread_closed_ht(FILE *file, closed_hash_table_t *hash_table)
 {
+    rewind(file);
     size_t len = 0;
     char tmp_str[MAX_WORD_LEN + 1];
     while (read_str(file, tmp_str, MAX_WORD_LEN) == EXIT_SUCCESS)
@@ -385,17 +409,16 @@ int fread_closed_ht(FILE *file, closed_hash_table_t *hash_table)
         len++;
     }
     if (!len)
-        return FILE_EMPTY_ERROR;
-
+        return HT_FILE_EMPTY_ERROR;
     if (!feof(file))
-        return FILE_READ_ERROR;
+        return HT_FILE_READ_ERROR;
 
     return EXIT_SUCCESS;
 }
 
 void print_closed_ht(closed_hash_table_t *hash_table)
 {
-    printf("Hash Table:\n");
+    printf("Closed Hash Table:\n");
     for (size_t i = 0; i < (size_t) hash_table->size; i++)
     {
         printf("Index %zu: ", i);
@@ -425,11 +448,8 @@ int restruct_closed_ht(closed_hash_table_t *hash_table)
     hash_table->count = 0;
 
     for (size_t i = 0; i < old_size; i++)
-    {
-        ht_key_t curr = old_keys[i];
-        if (curr)
-            insert_closed_ht(hash_table, curr);
-    }
+        if (old_keys[i])
+            insert_closed_ht(hash_table, old_keys[i]);
 
     free(old_keys);
     return EXIT_SUCCESS;

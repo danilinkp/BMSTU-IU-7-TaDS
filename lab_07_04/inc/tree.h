@@ -43,6 +43,8 @@ int tree_read(FILE *file, tree_node_t **root_bst, tree_node_t **root_avl);
 // Поиск вершины в дереве
 tree_node_t *tree_node_search(tree_node_t *root, const char *str);
 
+int tree_node_search_cmps(tree_node_t *root, const char *str);
+
 // Удаление вершины из дерева
 tree_node_t *tree_node_remove(tree_node_t *root, tree_node_t *removed_node, int is_avl);
 
