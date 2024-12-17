@@ -18,7 +18,7 @@ int main(void)
     rc = fread_graph(file_name, &graph);
     if (rc != EXIT_SUCCESS)
     {
-        printf("Ошибка при чтении файла\n");
+        printf("Ошибка при чтении файла. Файл не найден или он записан неверно.\n");
         return rc;
     }
 

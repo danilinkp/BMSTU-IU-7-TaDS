@@ -87,7 +87,7 @@ void find_shortest_paths(graph_t *graph)
                 if (i != j && graph->adjacency_matrix[i][k] != 0 && graph->adjacency_matrix[k][j] != 0)
                 {
                     int new_dist = graph->adjacency_matrix[i][k] + graph->adjacency_matrix[k][j];
-                    if (new_dist < graph->adjacency_matrix[i][j])
+                    if (graph->adjacency_matrix[i][j] == 0 || new_dist < graph->adjacency_matrix[i][j])
                     {
                         graph->adjacency_matrix[i][j] = new_dist;
                         graph->next[i][j] = graph->next[i][k];
@@ -97,6 +97,12 @@ void find_shortest_paths(graph_t *graph)
 
 static void print_shortest_path(graph_t graph, size_t i, size_t j)
 {
+    if (graph.adjacency_matrix[i][j] == 0)
+    {
+        printf("Между вершинами %zu и %zu нет пути\n", i, j);
+        return;
+    }
+
     printf("Кратчайший путь от %zu до %zu:\n", i, j);
     size_t start = i;
 
@@ -106,14 +112,13 @@ static void print_shortest_path(graph_t graph, size_t i, size_t j)
         start = graph.next[start][j];
     }
     printf("%zu = %d\n", j, graph.adjacency_matrix[i][j]);
-
 }
 
 void print_shortest_paths(graph_t graph)
 {
     for (size_t i = 0; i < graph.size; i++)
         for (size_t j = 0; j < graph.size; j++)
-            if (graph.adjacency_matrix[i][j] != 0)
+            if (i != j)
                 print_shortest_path(graph, i, j);
 }
 

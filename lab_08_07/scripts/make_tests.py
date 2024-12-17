@@ -49,7 +49,7 @@ if __name__ == "__main__":
         elif 7 < num_city <= 12:
             dencity = 0.45
         else:
-            dencity = 0.25
+            dencity = 0.2
         graph = generate_graph(num_city, max_distance, dencity)
         save_graph_to_file(graph, f"../data/graph_{num_city}.txt")
         print(f"Матрица смежности сгенерирована и сохранена в 'graph_{num_city}.txt'.")
